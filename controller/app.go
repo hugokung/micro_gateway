@@ -211,6 +211,11 @@ func (a *AppController) AppList(c *gin.Context) {
 	}
 	out.List = make([]dto.AppListItemOutput, 0)
 	for _, app := range appList {
+		appCounter, err := public.FlowCounterHandler.GetCounter(public.FlowCountAppPrefix + app.AppID)
+		if err != nil {
+			middleware.ResponseError(c, 20002, err)
+			return
+		}
 		item := dto.AppListItemOutput{
 			ID: app.ID,
 			AppID: app.AppID,
@@ -219,6 +224,8 @@ func (a *AppController) AppList(c *gin.Context) {
 			WhiteIPS: app.WhiteIPS,
 			Qpd: app.Qpd,
 			Qps: app.Qps,
+			RealQpd: appCounter.TotalCount,
+			RealQps: appCounter.QPS,
 			UpdatedAt: app.UpdatedAt,
 			CreatedAt: app.CreatedAt,
 			IsDelete: app.IsDelete,
@@ -245,17 +252,41 @@ func (admin *AppController) AppStatistics(c *gin.Context) {
 		return
 	}
 
+	tx, err := lib.GetGormPool("default")
+	if err != nil {
+		middleware.ResponseError(c, 2001, err)
+		return
+	}
+	appInfo := &dao.App{
+		ID: params.ID,
+		IsDelete: 0,
+	}
+	appInfo, err = appInfo.Find(c, tx, appInfo)
+	if err != nil {
+		middleware.ResponseError(c, 20002, err)
+		return
+	}
+	appCounter, err := public.FlowCounterHandler.GetCounter(public.FlowCountAppPrefix + appInfo.AppID)
+	if err != nil {
+		middleware.ResponseError(c, 20003, err)
+		return
+	}
 
+	currentTime := time.Now()
 	todayStat := []int64{}
-	for i := 0; i <= time.Now().In(lib.TimeLocation).Hour(); i++ {
-
-		todayStat = append(todayStat, 0)
+	for i := 0; i <= currentTime.In(lib.TimeLocation).Hour(); i++ {
+		dateTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), i, 0, 0, 0, lib.TimeLocation)
+		hourData, _ := appCounter.GetHourData(dateTime)
+		todayStat = append(todayStat, hourData)
 	}
 
 	//昨日流量全天小时级访问统计
 	yesterdayStat := []int64{}
+	yesterdayTime := time.Now().Add(-1 * time.Duration(time.Hour * 24))
 	for i := 0; i <= 23; i++ {
-		yesterdayStat = append(yesterdayStat, 0)
+		dateTime := time.Date(yesterdayTime.Year(), yesterdayTime.Month(), yesterdayTime.Day(), i, 0, 0, 0, lib.TimeLocation)
+		hourData, _ := appCounter.GetHourData(dateTime)
+		yesterdayStat = append(yesterdayStat, hourData)
 	}
 	stat := dto.StatisticsOutput{
 		Today:     todayStat,

@@ -2,7 +2,9 @@ package http_proxy_router
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hugokung/micro_gateway/controller"
 	"github.com/hugokung/micro_gateway/http_proxy_middleware"
+	"github.com/hugokung/micro_gateway/middleware"
 )
 
 func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
@@ -14,11 +16,20 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 			"message": "pong",
 		})
 	})
-	
-	router.Use(
+
+	oauth := router.Group("/oauth")
+	oauth.Use(middleware.TranslationMiddleware())
+	{
+		controller.OAuthRegister(oauth)
+	}
+	root := router.Group("/")
+	root.Use(
 	http_proxy_middleware.HTTPAccessModeMiddleware(), 
 	http_proxy_middleware.HTTPFlowCountMiddleware(),
 	http_proxy_middleware.HTTPFlowLimitMiddleware(),
+	http_proxy_middleware.HTTPJwtAuthTokenMiddleware(),
+	http_proxy_middleware.HTTPJwtFlowCountMiddleware(),
+	http_proxy_middleware.HTTPJwtFlowLimitMiddleware(),
 	http_proxy_middleware.HTTPWhileListMiddleware(),
 	http_proxy_middleware.HTTPBlacListMiddleware(),
 	http_proxy_middleware.HTTPHeaderTransferMiddleware(), 

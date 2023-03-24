@@ -19,6 +19,10 @@ const (
 	FlowCountServicePrefix = "flow_service_"
 	FlowCountAppPrefix = "flow_app_"
 	FlowServicePrefix = "flow_service_"
+	FlowAppPrefix = "flow_app_"
+
+	JwtSignKey = "my_sign_key"
+	JwtExpires = 60*60
 )
 
 var (

@@ -28,7 +28,7 @@ func HttpServerRun() {
 		MaxHeaderBytes: 1 << uint(lib.GetIntConf("proxy.http.max_header_bytes")),
 	}
 	log.Printf(" [INFO] Http_Proxy_Run:%s\n",lib.GetStringConf("proxy.http.addr"))
-	if err := HttpSrvHandler.ListenAndServe(); err != nil {
+	if err := HttpSrvHandler.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf(" [ERROR] Http_Proxy_Run:%s err:%v\n", lib.GetStringConf("proxy.http.addr"), err)
 	}
 }
@@ -44,7 +44,7 @@ func HttpsServerRun() {
 		MaxHeaderBytes: 1 << uint(lib.GetIntConf("proxy.https.max_header_bytes")),
 	}
 	log.Printf(" [INFO] Https_Proxy_Run:%s\n",lib.GetStringConf("proxy.https.addr"))
-	if err := HttpsSrvHandler.ListenAndServeTLS(cert_file.Path("server.crt"), cert_file.Path("server.key")); err != nil {
+	if err := HttpsSrvHandler.ListenAndServeTLS(cert_file.Path("server.crt"), cert_file.Path("server.key")); err != nil && err != http.ErrServerClosed {
 		log.Fatalf(" [ERROR] Https_Proxy_Run:%s err:%v\n", lib.GetStringConf("proxy.https.addr"), err)
 	}
 }

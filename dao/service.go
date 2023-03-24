@@ -102,3 +102,26 @@ func (s *ServiceManager) LoadOnce() error {
 	})
 	return s.err
 }
+
+func (s *ServiceManager) GetTcpServiceList() []*ServiceDetail {
+	list := []*ServiceDetail{}
+	for _, serviceItem := range s.ServiceSlice {
+		tmpItem := serviceItem
+		if tmpItem.Info.LoadType == public.LoadTypeTCP {
+			list = append(list, tmpItem)
+		}
+	}
+	return list
+}
+
+
+func (s *ServiceManager) GetGrpcServiceList() []*ServiceDetail {
+	list := []*ServiceDetail{}
+	for _, serviceItem := range s.ServiceSlice {
+		tmpItem := serviceItem
+		if tmpItem.Info.LoadType == public.LoadTypeGRPC {
+			list = append(list, tmpItem)
+		}
+	}
+	return list
+}

@@ -10,6 +10,7 @@ import (
 	"github.com/hugokung/micro_gateway/dao"
 	"github.com/hugokung/micro_gateway/http_proxy_router"
 	"github.com/hugokung/micro_gateway/router"
+	"github.com/hugokung/micro_gateway/tcp_proxy_router"
 )
 
 var (
@@ -43,16 +44,20 @@ func main() {
 		lib.InitModule(*config, []string{"base", "mysql", "redis"})
 		defer lib.Destroy()
 		dao.ServiceManagerHandler.LoadOnce()
+		dao.AppManagerHandler.LoadOnce()
 		go func ()  {
 			http_proxy_router.HttpServerRun()
 		}()
 		go func ()  {
 			http_proxy_router.HttpsServerRun()
 		}()
+		go func ()  {
+			tcp_proxy_router.TcpServerRun()
+		}()
 		quit := make(chan os.Signal)
 		signal.Notify(quit, syscall.SIGKILL, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
 		<-quit
-
+		tcp_proxy_router.TcpServerStop()
 		http_proxy_router.HttpServerStop()
 		http_proxy_router.HttpsServerStop()
 	}
