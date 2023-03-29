@@ -191,6 +191,6 @@ type ServiceAddHTTPInput struct {
 }
 
 type ServiceStatOutput struct {
-	Today     []int64 `json:"today" form:"today" comment:"今日流量" example:"" validate:""`         //列表
-	Yesterday []int64 `json:"yesterday" form:"yesterday" comment:"昨日流量" example:"" validate:""` //列表
+	Today     []int64 `json:"today" form:"today" comment:"今日流量" validate:""`         //列表
+	Yesterday []int64 `json:"yesterday" form:"yesterday" comment:"昨日流量" validate:""` //列表
 }

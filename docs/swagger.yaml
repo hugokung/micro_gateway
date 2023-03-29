@@ -251,7 +251,6 @@ definitions:
         type: string
     required:
     - app_id
-    - id
     - name
     type: object
   dto.ChangePwdInput:
@@ -405,6 +404,19 @@ definitions:
       total:
         type: integer
     type: object
+  dto.ServiceStatOutput:
+    properties:
+      today:
+        description: 列表
+        items:
+          type: integer
+        type: array
+      yesterday:
+        description: 列表
+        items:
+          type: integer
+        type: array
+    type: object
   dto.ServiceUpdateGRPCInput:
     properties:
       black_list:
@@ -488,6 +500,45 @@ definitions:
     - service_desc
     - service_name
     - weight_list
+    type: object
+  dto.StatisticsOutput:
+    properties:
+      today:
+        items:
+          type: integer
+        type: array
+      yesterday:
+        items:
+          type: integer
+        type: array
+    required:
+    - today
+    - yesterday
+    type: object
+  dto.TokensInput:
+    properties:
+      grant_type:
+        description: 授权类型
+        example: client_credentials
+        type: string
+      scope:
+        description: 权限范围
+        example: read_write
+        type: string
+    required:
+    - grant_type
+    - scope
+    type: object
+  dto.TokensOutput:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      scope:
+        type: string
+      token_type:
+        type: string
     type: object
   middleware.Response:
     properties:
@@ -736,6 +787,33 @@ paths:
       summary: 租户列表
       tags:
       - 租户管理
+  /app/app_stat:
+    get:
+      consumes:
+      - application/json
+      description: 租户统计
+      operationId: /app/app_stat
+      parameters:
+      - description: 租户ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.StatisticsOutput'
+              type: object
+      summary: 租户统计
+      tags:
+      - 租户管理
   /app/app_update:
     post:
       consumes:
@@ -764,6 +842,27 @@ paths:
       summary: 租户更新
       tags:
       - 租户管理
+  /dashboard/flow_stat:
+    get:
+      consumes:
+      - application/json
+      description: 服务统计
+      operationId: /dashboard/flow_stat
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ServiceStatOutput'
+              type: object
+      summary: 服务统计
+      tags:
+      - 首页大盘
   /dashboard/panel_group_data:
     get:
       consumes:
@@ -806,6 +905,34 @@ paths:
       summary: 服务统计
       tags:
       - 首页大盘
+  /oauth/tokens:
+    post:
+      consumes:
+      - application/json
+      description: 获取TOKEN
+      operationId: /oauth/tokens
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TokensInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.TokensOutput'
+              type: object
+      summary: 获取TOKEN
+      tags:
+      - OAUTH
   /service/service_add_grpc:
     post:
       consumes:
@@ -978,6 +1105,33 @@ paths:
                   $ref: '#/definitions/dto.ServiceInfoOutput'
               type: object
       summary: 服务信息列表
+      tags:
+      - 服务管理
+  /service/service_stat:
+    get:
+      consumes:
+      - application/json
+      description: 服务统计
+      operationId: /service/service_stat
+      parameters:
+      - description: 服务ID
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ServiceStatOutput'
+              type: object
+      summary: 服务统计
       tags:
       - 服务管理
   /service/service_update_grpc:
