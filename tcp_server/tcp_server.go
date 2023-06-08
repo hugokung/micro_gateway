@@ -2,8 +2,8 @@ package tcp_server
 
 import (
 	"context"
-	"fmt"
 	"errors"
+	"fmt"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -138,6 +138,6 @@ func (s *TcpServer) getDoneChan() <-chan struct{} {
 }
 
 func ListenAndServe(addr string, handler TCPHandler) error {
-	server := &TcpServer{Addr: addr, Handler: handler, doneChan: make(chan struct{}),}
+	server := &TcpServer{Addr: addr, Handler: handler, doneChan: make(chan struct{})}
 	return server.ListenAndServe()
 }

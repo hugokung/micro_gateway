@@ -79,7 +79,7 @@ func (s *ServiceManager) LoadOnce() error {
 			return
 		}
 		params := &dto.ServiceInfoInput{
-			PageNo: 1,
+			PageNo:   1,
 			PageSize: 99999,
 		}
 		list, _, err := serviceInfo.PageList(c, tx, params)
@@ -104,7 +104,7 @@ func (s *ServiceManager) LoadOnce() error {
 }
 
 func (s *ServiceManager) GetTcpServiceList() []*ServiceDetail {
-	list := []*ServiceDetail{}
+	var list []*ServiceDetail
 	for _, serviceItem := range s.ServiceSlice {
 		tmpItem := serviceItem
 		if tmpItem.Info.LoadType == public.LoadTypeTCP {
@@ -114,9 +114,8 @@ func (s *ServiceManager) GetTcpServiceList() []*ServiceDetail {
 	return list
 }
 
-
 func (s *ServiceManager) GetGrpcServiceList() []*ServiceDetail {
-	list := []*ServiceDetail{}
+	var list []*ServiceDetail
 	for _, serviceItem := range s.ServiceSlice {
 		tmpItem := serviceItem
 		if tmpItem.Info.LoadType == public.LoadTypeGRPC {

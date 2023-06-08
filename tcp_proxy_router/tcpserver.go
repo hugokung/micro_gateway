@@ -11,15 +11,19 @@ import (
 	"github.com/hugokung/micro_gateway/tcp_server"
 )
 
-var tcpServerList = []*tcp_server.TcpServer{}
+var tcpServerList []*tcp_server.TcpServer
 
 func TcpServerRun() {
+	//tcp代理程序启动前，需要获取已有的tcp服务信息。
 	serviceList := dao.ServiceManagerHandler.GetTcpServiceList()
+
 	for _, serviceItem := range serviceList {
 		tmpItem := serviceItem
 		log.Printf(" [INFO] Tcp_Proxy_Run:%v\n", tmpItem.TCPRule.Port)
 		go func(serviceDetail *dao.ServiceDetail) {
 			addr := fmt.Sprintf(":%d", serviceDetail.TCPRule.Port)
+
+			//对于每个tcp服务，获取一个负载均衡器
 			rb, err := dao.LoadBalancerHandler.GetLoadBalancer(serviceDetail)
 			if err != nil {
 				log.Fatalf("[INFO] GetTcpLoadBalancer err: %v %v\n", addr, err)
@@ -41,10 +45,10 @@ func TcpServerRun() {
 				func(c *tcp_proxy_middleware.TcpSliceRouterContext) tcp_server.TCPHandler {
 					return reverse_proxy.NewTcpLoadBalanceReverseProxy(c, rb)
 				}, router)
-			
+
 			baseCtx := context.WithValue(context.Background(), "service", serviceDetail)
 			tcpServer := &tcp_server.TcpServer{
-				Addr: addr,
+				Addr:    addr,
 				Handler: routerHandler,
 				BaseCtx: baseCtx,
 			}

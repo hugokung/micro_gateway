@@ -10,7 +10,7 @@ import (
 
 const abortIndex int8 = math.MaxInt8 / 2 //最多 63 个中间件
 
-//知其然也知其所以然
+// 知其然也知其所以然
 type TcpHandlerFunc func(*TcpSliceRouterContext)
 
 // router 结构体
@@ -36,7 +36,7 @@ type TcpSliceRouterContext struct {
 func newTcpSliceRouterContext(conn net.Conn, r *TcpSliceRouter, ctx context.Context) *TcpSliceRouterContext {
 	newTcpSliceGroup := &TcpSliceGroup{}
 	*newTcpSliceGroup = *r.groups[0] //浅拷贝数组指针,只会使用第一个分组
-	c := &TcpSliceRouterContext{conn: conn, TcpSliceGroup: newTcpSliceGroup, Ctx: ctx,}
+	c := &TcpSliceRouterContext{conn: conn, TcpSliceGroup: newTcpSliceGroup, Ctx: ctx}
 	c.Reset()
 	return c
 }
@@ -70,7 +70,7 @@ func NewTcpSliceRouterHandler(coreFunc func(*TcpSliceRouterContext) tcp_server.T
 	}
 }
 
-// 构造 router
+// NewTcpSliceRouter 构造 router
 func NewTcpSliceRouter() *TcpSliceRouter {
 	return &TcpSliceRouter{}
 }
@@ -86,7 +86,7 @@ func (g *TcpSliceRouter) Group(path string) *TcpSliceGroup {
 	}
 }
 
-// 构造回调方法
+// Use 构造回调方法
 func (g *TcpSliceGroup) Use(middlewares ...TcpHandlerFunc) *TcpSliceGroup {
 	g.handlers = append(g.handlers, middlewares...)
 	existsFlag := false
@@ -101,7 +101,7 @@ func (g *TcpSliceGroup) Use(middlewares ...TcpHandlerFunc) *TcpSliceGroup {
 	return g
 }
 
-// 从最先加入中间件开始回调
+// Next 从最先加入中间件开始回调
 func (c *TcpSliceRouterContext) Next() {
 	c.index++
 	for c.index < int8(len(c.handlers)) {
@@ -110,17 +110,17 @@ func (c *TcpSliceRouterContext) Next() {
 	}
 }
 
-// 跳出中间件方法
+// Abort 跳出中间件方法
 func (c *TcpSliceRouterContext) Abort() {
 	c.index = abortIndex
 }
 
-// 是否跳过了回调
+// IsAborted 是否跳过了回调
 func (c *TcpSliceRouterContext) IsAborted() bool {
 	return c.index >= abortIndex
 }
 
-// 重置回调
+// Reset 重置回调
 func (c *TcpSliceRouterContext) Reset() {
 	c.index = -1
 }
