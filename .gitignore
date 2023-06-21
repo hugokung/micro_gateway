@@ -4,3 +4,5 @@
 *.srl
 logs/*
 .idea/
+dist/*
+bin/*
