@@ -6,3 +6,4 @@ logs/*
 .idea/
 dist/*
 bin/*
+.DS_Store
