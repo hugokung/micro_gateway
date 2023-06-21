@@ -45,7 +45,7 @@ func (s *LoadBalanceCheckConf) GetConf() []string {
 	return confList
 }
 
-//更新配置时，通知监听者也更新
+// WatchConf 更新配置时，通知监听者也更新
 func (s *LoadBalanceCheckConf) WatchConf() {
 	fmt.Println("watchConf")
 	go func() {
@@ -82,7 +82,7 @@ func (s *LoadBalanceCheckConf) WatchConf() {
 	}()
 }
 
-//更新配置时，通知监听者也更新
+// UpdateConf 更新配置时，通知监听者也更新
 func (s *LoadBalanceCheckConf) UpdateConf(conf []string) {
 	fmt.Println("UpdateConf", conf)
 	s.activeList = conf

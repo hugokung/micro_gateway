@@ -6,7 +6,7 @@ import (
 	"github.com/hugokung/micro_gateway/reverse_proxy/zookeeper"
 )
 
-// 配置主题
+// LoadBalanceConf 配置主题
 type LoadBalanceConf interface {
 	Attach(o Observer)
 	GetConf() []string
@@ -45,7 +45,7 @@ func (s *LoadBalanceZkConf) GetConf() []string {
 	return confList
 }
 
-//更新配置时，通知监听者也更新
+// WatchConf 更新配置时，通知监听者也更新
 func (s *LoadBalanceZkConf) WatchConf() {
 	zkManager := zookeeper.NewZkManager(s.zkHosts)
 	zkManager.GetConnect()
@@ -65,7 +65,7 @@ func (s *LoadBalanceZkConf) WatchConf() {
 	}()
 }
 
-//更新配置时，通知监听者也更新
+// UpdateConf 更新配置时，通知监听者也更新
 func (s *LoadBalanceZkConf) UpdateConf(conf []string) {
 	s.activeList = conf
 	for _, obs := range s.observers {
