@@ -2,6 +2,7 @@ package dao
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"strings"
@@ -64,6 +65,7 @@ type LoadBalancer struct {
 type LoadBalancerItem struct {
 	LoadBalance load_balance.LoadBalance
 	ServiceName string
+	UpdatedAt   time.Time
 }
 
 var LoadBalancerHandler *LoadBalancer
@@ -78,12 +80,40 @@ func NewLoadBalancer() *LoadBalancer {
 
 func init() {
 	LoadBalancerHandler = NewLoadBalancer()
+	ServiceManagerHandler.Register(LoadBalancerHandler)
 	TransportorHandler = NewTransportor()
+	ServiceManagerHandler.Register(TransportorHandler)
+}
+
+func (lbr *LoadBalancer) Update(e *ServiceEvent) {
+	log.Printf("LoadBalancer.Update\n")
+	for _, service := range e.AddService {
+		lbr.GetLoadBalancer(service)
+	}
+	for _, service := range e.UpdateService {
+		lbr.GetLoadBalancer(service)
+	}
+	var newLBSlice []*LoadBalancerItem
+	for _, lbrItem := range lbr.LoadBalanceSlice {
+		matched := false
+		for _, service := range e.DeleteService {
+			if lbrItem.ServiceName == service.Info.ServiceName {
+				lbrItem.LoadBalance.Close()
+				matched = true
+			}
+		}
+		if matched {
+			delete(lbr.LoadBalanceMap, lbrItem.ServiceName)
+		} else {
+			newLBSlice = append(newLBSlice, lbrItem)
+		}
+	}
+	lbr.LoadBalanceSlice = newLBSlice
 }
 
 func (lbr *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.LoadBalance, error) {
 	for _, lbrItem := range lbr.LoadBalanceSlice {
-		if lbrItem.ServiceName == service.Info.ServiceName {
+		if lbrItem.ServiceName == service.Info.ServiceName && lbrItem.UpdatedAt == service.Info.UpdatedAt {
 			return lbrItem.LoadBalance, nil
 		}
 	}
@@ -111,15 +141,26 @@ func (lbr *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.L
 	lb := load_balance.LoadBanlanceFactorWithConf(load_balance.LbType(service.LoadBalance.RoundType), mConf)
 
 	//save to map and slice
-	lbItem := &LoadBalancerItem{
-		LoadBalance: lb,
-		ServiceName: service.Info.ServiceName,
+	matched := false
+	for _, lbrItem := range lbr.LoadBalanceSlice {
+		if lbrItem.ServiceName == service.Info.ServiceName {
+			matched = true
+			lbrItem.LoadBalance.Close()
+			lbrItem.LoadBalance = lb
+			lbrItem.UpdatedAt = service.Info.UpdatedAt
+		}
 	}
-	lbr.LoadBalanceSlice = append(lbr.LoadBalanceSlice, lbItem)
-
-	lbr.Locker.Lock()
-	defer lbr.Locker.Unlock()
-	lbr.LoadBalanceMap[service.Info.ServiceName] = lbItem
+	if !matched {
+		lbItem := &LoadBalancerItem{
+			LoadBalance: lb,
+			ServiceName: service.Info.ServiceName,
+			UpdatedAt:   service.Info.UpdatedAt,
+		}
+		lbr.LoadBalanceSlice = append(lbr.LoadBalanceSlice, lbItem)
+		lbr.Locker.Lock()
+		defer lbr.Locker.Unlock()
+		lbr.LoadBalanceMap[service.Info.ServiceName] = lbItem
+	}
 	return lb, nil
 }
 
@@ -131,6 +172,7 @@ type Transportor struct {
 type TransportItem struct {
 	Trans       *http.Transport
 	ServiceName string
+	UpdateAt    time.Time
 }
 
 var TransportorHandler *Transportor
@@ -143,6 +185,31 @@ func NewTransportor() *Transportor {
 	}
 }
 
+func (t *Transportor) Update(e *ServiceEvent) {
+	log.Printf("Transportor.Update\n")
+	for _, service := range e.AddService {
+		t.GetTransportor(service)
+	}
+	for _, service := range e.UpdateService {
+		t.GetTransportor(service)
+	}
+	var newSlice []*TransportItem
+	for _, tItem := range t.TransportSlice {
+		matched := false
+		for _, service := range e.DeleteService {
+			if tItem.ServiceName == service.Info.ServiceName {
+				matched = true
+			}
+		}
+		if matched {
+			delete(t.TransportMap, tItem.ServiceName)
+		} else {
+			newSlice = append(newSlice, tItem)
+		}
+	}
+	t.TransportSlice = newSlice
+}
+
 func (t *Transportor) GetTransportor(service *ServiceDetail) (*http.Transport, error) {
 	for _, transItem := range t.TransportSlice {
 		if transItem.ServiceName == service.Info.ServiceName {
@@ -150,12 +217,11 @@ func (t *Transportor) GetTransportor(service *ServiceDetail) (*http.Transport, e
 		}
 	}
 
-	//todo 优化点5
 	if service.LoadBalance.UpstreamConnectTimeout == 0 {
 		service.LoadBalance.UpstreamConnectTimeout = 30
 	}
 	if service.LoadBalance.UpstreamMaxIdle == 0 {
-		service.LoadBalance.UpstreamMaxIdle = 100
+		service.LoadBalance.UpstreamMaxIdle = 4000
 	}
 	if service.LoadBalance.UpstreamIdleTimeout == 0 {
 		service.LoadBalance.UpstreamIdleTimeout = 90
@@ -163,28 +229,45 @@ func (t *Transportor) GetTransportor(service *ServiceDetail) (*http.Transport, e
 	if service.LoadBalance.UpstreamHeaderTimeout == 0 {
 		service.LoadBalance.UpstreamHeaderTimeout = 30
 	}
+	perhost := 0
+	if len(service.LoadBalance.GetIPListByModel()) > 0 {
+		perhost = service.LoadBalance.UpstreamMaxIdle / len(service.LoadBalance.GetIPListByModel())
+	}
 	trans := &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
 			Timeout:   time.Duration(service.LoadBalance.UpstreamConnectTimeout) * time.Second,
 			KeepAlive: 30 * time.Second,
 			DualStack: true,
 		}).DialContext,
 		ForceAttemptHTTP2:     true,
+		MaxIdleConnsPerHost:   perhost,
 		MaxIdleConns:          service.LoadBalance.UpstreamMaxIdle,
+		WriteBufferSize:       1 << 18, //200m
+		ReadBufferSize:        1 << 18, //200m
 		IdleConnTimeout:       time.Duration(service.LoadBalance.UpstreamIdleTimeout) * time.Second,
 		TLSHandshakeTimeout:   10 * time.Second,
 		ResponseHeaderTimeout: time.Duration(service.LoadBalance.UpstreamHeaderTimeout) * time.Second,
 	}
 
 	//save to map and slice
-	transItem := &TransportItem{
-		Trans:       trans,
-		ServiceName: service.Info.ServiceName,
+	matched := false
+	for _, transItem := range t.TransportSlice {
+		if transItem.ServiceName == service.Info.ServiceName {
+			matched = true
+			transItem.Trans = trans
+			transItem.UpdateAt = service.Info.UpdatedAt
+		}
 	}
-	t.TransportSlice = append(t.TransportSlice, transItem)
-	t.Locker.Lock()
-	defer t.Locker.Unlock()
-	t.TransportMap[service.Info.ServiceName] = transItem
+	if !matched {
+		transItem := &TransportItem{
+			Trans:       trans,
+			ServiceName: service.Info.ServiceName,
+			UpdateAt:    service.Info.UpdatedAt,
+		}
+		t.TransportSlice = append(t.TransportSlice, transItem)
+		t.Locker.Lock()
+		defer t.Locker.Unlock()
+		t.TransportMap[service.Info.ServiceName] = transItem
+	}
 	return trans, nil
 }
