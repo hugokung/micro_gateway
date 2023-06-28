@@ -15,8 +15,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-var grpcServerList = []*warpGrpcServer{}
-
 type GrpcManager struct {
 	ServerList []*warpGrpcServer
 }
@@ -111,7 +109,7 @@ func (g *GrpcManager) Update(e *dao.ServiceEvent) {
 	}
 }
 
-func GrpcServerStop() {
+func (g *GrpcManager) GrpcServerStop() {
 	for _, grpcServer := range GrpcManagerHandler.ServerList {
 		wait := sync.WaitGroup{}
 		wait.Add(1)

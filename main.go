@@ -45,7 +45,6 @@ func main() {
 		lib.InitModule(*config, []string{"base", "mysql", "redis"})
 		defer lib.Destroy()
 
-		//TODO:目前只能加载启动前已有的信息，还需要实现增量信息的添加。
 		//加载下游服务的信息到内存
 		dao.ServiceManagerHandler.LoadAndWatch()
 		//加载租户信息到内存
@@ -57,16 +56,16 @@ func main() {
 			http_proxy_router.HttpsServerRun()
 		}()
 		go func() {
-			tcp_proxy_router.TcpServerRun()
+			tcp_proxy_router.TcpManagerHandler.TcpServerRun()
 		}()
 		go func() {
-			grpc_proxy_router.GrpcServerRun()
+			grpc_proxy_router.GrpcManagerHandler.GrpcServerRun()
 		}()
 		quit := make(chan os.Signal)
 		signal.Notify(quit, syscall.SIGKILL, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
 		<-quit
-		tcp_proxy_router.TcpServerStop()
-		grpc_proxy_router.GrpcServerStop()
+		tcp_proxy_router.TcpManagerHandler.TcpServerStop()
+		grpc_proxy_router.GrpcManagerHandler.GrpcServerStop()
 		http_proxy_router.HttpServerStop()
 		http_proxy_router.HttpsServerStop()
 	}

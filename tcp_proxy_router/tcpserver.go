@@ -3,7 +3,9 @@ package tcp_proxy_router
 import (
 	"context"
 	"fmt"
+	"github.com/hugokung/micro_gateway/public"
 	"log"
+	"sync"
 
 	"github.com/hugokung/micro_gateway/dao"
 	"github.com/hugokung/micro_gateway/reverse_proxy"
@@ -13,7 +15,58 @@ import (
 
 var tcpServerList []*tcp_server.TcpServer
 
-func TcpServerRun() {
+type TcpManager struct {
+	ServerList []*tcp_server.TcpServer
+}
+
+func init() {
+	TcpManagerHandler = NewTcpManager()
+}
+
+func NewTcpManager() *TcpManager {
+	return &TcpManager{}
+}
+
+var TcpManagerHandler *TcpManager
+
+func (t *TcpManager) tcpServerRunOnce(service *dao.ServiceDetail) {
+	addr := fmt.Sprintf(":%d", service.TCPRule.Port)
+	rb, err := dao.LoadBalancerHandler.GetLoadBalancer(service)
+	if err != nil {
+		log.Fatalf(" [INFO] GetTcpLoadBalancer %v err:%v\n", addr, err)
+		return
+	}
+
+	//构建路由及设置中间件
+	router := tcp_proxy_middleware.NewTcpSliceRouter()
+	router.Group("/").Use(
+		tcp_proxy_middleware.TCPFlowCountMiddleware(),
+		tcp_proxy_middleware.TCPFlowLimitMiddleware(),
+		tcp_proxy_middleware.TCPWhileListMiddleware(),
+		tcp_proxy_middleware.TCPBlacListMiddleware(),
+	)
+
+	//构建回调handler
+	routerHandler := tcp_proxy_middleware.NewTcpSliceRouterHandler(
+		func(c *tcp_proxy_middleware.TcpSliceRouterContext) tcp_server.TCPHandler {
+			return reverse_proxy.NewTcpLoadBalanceReverseProxy(c, rb)
+		}, router)
+
+	baseCtx := context.WithValue(context.Background(), "service", service)
+	tcpServer := &tcp_server.TcpServer{
+		Addr:     addr,
+		Handler:  routerHandler,
+		BaseCtx:  baseCtx,
+		UpdateAt: service.Info.UpdatedAt,
+	}
+	t.ServerList = append(t.ServerList, tcpServer)
+	log.Printf(" [INFO] tcp_proxy_run %v\n", addr)
+	if err := tcpServer.ListenAndServe(); err != nil && err != tcp_server.ErrServerClosed {
+		log.Printf(" [INFO] tcp_proxy_run %v err:%v\n", addr, err)
+	}
+}
+
+func (t *TcpManager) TcpServerRun() {
 	//tcp代理程序启动前，需要获取已有的tcp服务信息。
 	serviceList := dao.ServiceManagerHandler.GetTcpServiceList()
 
@@ -21,49 +74,49 @@ func TcpServerRun() {
 		tmpItem := serviceItem
 		log.Printf(" [INFO] Tcp_Proxy_Run:%v\n", tmpItem.TCPRule.Port)
 		go func(serviceDetail *dao.ServiceDetail) {
-			addr := fmt.Sprintf(":%d", serviceDetail.TCPRule.Port)
-
-			//对于每个tcp服务，获取一个负载均衡器
-			rb, err := dao.LoadBalancerHandler.GetLoadBalancer(serviceDetail)
-			if err != nil {
-				log.Fatalf("[INFO] GetTcpLoadBalancer err: %v %v\n", addr, err)
-				return
-			}
-
-			//构建路由及设置中间件
-			// counter, _ := public.NewFlowCountService("local_app", time.Second)
-			router := tcp_proxy_middleware.NewTcpSliceRouter()
-			router.Group("/").Use(
-				tcp_proxy_middleware.TCPFlowCountMiddleware(),
-				tcp_proxy_middleware.TCPFlowLimitMiddleware(),
-				tcp_proxy_middleware.TCPWhileListMiddleware(),
-				tcp_proxy_middleware.TCPBlacListMiddleware(),
-			)
-
-			//构建回调handler
-			routerHandler := tcp_proxy_middleware.NewTcpSliceRouterHandler(
-				func(c *tcp_proxy_middleware.TcpSliceRouterContext) tcp_server.TCPHandler {
-					return reverse_proxy.NewTcpLoadBalanceReverseProxy(c, rb)
-				}, router)
-
-			baseCtx := context.WithValue(context.Background(), "service", serviceDetail)
-			tcpServer := &tcp_server.TcpServer{
-				Addr:    addr,
-				Handler: routerHandler,
-				BaseCtx: baseCtx,
-			}
-			if err := tcpServer.ListenAndServe(); err != nil && err != tcp_server.ErrServerClosed {
-				log.Fatalf("[INFO] tcp_proxy_run err: %v\n", err)
-			}
-			tcpServerList = append(tcpServerList, tcpServer)
+			t.tcpServerRunOnce(serviceDetail)
 		}(tmpItem)
+	}
+	dao.ServiceManagerHandler.Register(t)
+}
+
+func (t *TcpManager) Update(e *dao.ServiceEvent) {
+	log.Printf("TcpManager.Update")
+	delList := e.DeleteService
+	for _, delService := range delList {
+		if delService.Info.LoadType == public.LoadTypeTCP {
+			continue
+		}
+		for _, tcpServer := range TcpManagerHandler.ServerList {
+			if delService.Info.ServiceName != tcpServer.ServiceName {
+				continue
+			}
+			tcpServer.Close()
+			log.Printf(" [INFO] tcp_proxy_stop %v stopped\n", tcpServer.Addr)
+		}
+	}
+	addList := e.AddService
+	for _, addService := range addList {
+		if addService.Info.LoadType != public.LoadTypeTCP {
+			continue
+		}
+		go t.tcpServerRunOnce(addService)
 	}
 }
 
-func TcpServerStop() {
-	for _, tcpServer := range tcpServerList {
-		tcpServer.Close()
-		log.Printf("[INFO] tcp_proxy_stop %v stopped\n", tcpServer.Addr)
+func (t *TcpManager) TcpServerStop() {
+	for _, tcpServer := range t.ServerList {
+		wait := sync.WaitGroup{}
+		wait.Add(1)
+		go func() {
+			defer func() {
+				wait.Done()
+				if err := recover(); err != nil {
+					log.Println(err)
+				}
+			}()
+			tcpServer.Close()
+		}()
+		log.Printf(" [INFO] tcp_proxy_stop %v stopped\n", tcpServer.Addr)
 	}
-	log.Printf(" [INFO] Tcp_Proxy stopped\n")
 }
