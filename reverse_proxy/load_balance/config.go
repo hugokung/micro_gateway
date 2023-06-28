@@ -12,6 +12,7 @@ type LoadBalanceConf interface {
 	GetConf() []string
 	WatchConf()
 	UpdateConf(conf []string)
+	CloseWatch()
 }
 
 type LoadBalanceZkConf struct {
@@ -21,6 +22,8 @@ type LoadBalanceZkConf struct {
 	confIpWeight map[string]string
 	activeList   []string
 	format       string
+	name         string
+	closeChan    chan bool
 }
 
 func (s *LoadBalanceZkConf) Attach(o Observer) {
@@ -81,9 +84,14 @@ func NewLoadBalanceZkConf(format, path string, zkHosts []string, conf map[string
 	if err != nil {
 		return nil, err
 	}
-	mConf := &LoadBalanceZkConf{format: format, activeList: zlist, confIpWeight: conf, zkHosts: zkHosts, path: path}
+	mConf := &LoadBalanceZkConf{format: format, activeList: zlist, confIpWeight: conf, zkHosts: zkHosts, path: path, closeChan: make(chan bool, 1)}
 	mConf.WatchConf()
 	return mConf, nil
+}
+
+func (s *LoadBalanceZkConf) CloseWatch() {
+	s.closeChan <- true
+	close(s.closeChan)
 }
 
 type Observer interface {

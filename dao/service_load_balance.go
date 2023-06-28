@@ -133,7 +133,7 @@ func (lbr *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.L
 		ipConf[item] = weightList[idx]
 	}
 
-	mConf, err := load_balance.NewLoadBalanceCheckConf(
+	mConf, err := load_balance.NewLoadBalanceCheckConf(service.Info.ServiceName,
 		fmt.Sprintf("%s%s", schema, "%s"), ipConf)
 	if err != nil {
 		return nil, err

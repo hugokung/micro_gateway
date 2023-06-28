@@ -50,7 +50,7 @@ func NewConsistentHashBanlance(replicas int, fn Hash) *ConsistentHashBanlance {
 	return m
 }
 
-// 验证是否为空
+// IsEmpty 验证是否为空
 func (c *ConsistentHashBanlance) IsEmpty() bool {
 	return len(c.keys) == 0
 }
@@ -116,3 +116,6 @@ func (c *ConsistentHashBanlance) Update() {
 	}
 }
 
+func (c *ConsistentHashBanlance) Close() {
+	c.conf.CloseWatch()
+}
