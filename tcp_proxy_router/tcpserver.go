@@ -13,7 +13,12 @@ import (
 	"github.com/hugokung/micro_gateway/tcp_server"
 )
 
-var tcpServerList []*tcp_server.TcpServer
+//var tcpServerList []*tcp_server.TcpServer
+
+const (
+	typeOfUpdate int = iota + 1
+	typeOfOther
+)
 
 type TcpManager struct {
 	ServerList []*tcp_server.TcpServer
@@ -29,7 +34,7 @@ func NewTcpManager() *TcpManager {
 
 var TcpManagerHandler *TcpManager
 
-func (t *TcpManager) tcpServerRunOnce(service *dao.ServiceDetail) {
+func (t *TcpManager) tcpServerRunOnce(service *dao.ServiceDetail, tp int) {
 	addr := fmt.Sprintf(":%d", service.TCPRule.Port)
 	rb, err := dao.LoadBalancerHandler.GetLoadBalancer(service)
 	if err != nil {
@@ -59,7 +64,18 @@ func (t *TcpManager) tcpServerRunOnce(service *dao.ServiceDetail) {
 		BaseCtx:  baseCtx,
 		UpdateAt: service.Info.UpdatedAt,
 	}
-	t.ServerList = append(t.ServerList, tcpServer)
+
+	if tp != typeOfUpdate {
+		t.ServerList = append(t.ServerList, tcpServer)
+	} else {
+		for _, sl := range t.ServerList {
+			if sl.ServiceName == service.Info.ServiceName {
+				sl = tcpServer
+				break
+			}
+		}
+	}
+
 	log.Printf(" [INFO] tcp_proxy_run %v\n", addr)
 	if err := tcpServer.ListenAndServe(); err != nil && err != tcp_server.ErrServerClosed {
 		log.Printf(" [INFO] tcp_proxy_run %v err:%v\n", addr, err)
@@ -74,7 +90,7 @@ func (t *TcpManager) TcpServerRun() {
 		tmpItem := serviceItem
 		log.Printf(" [INFO] Tcp_Proxy_Run:%v\n", tmpItem.TCPRule.Port)
 		go func(serviceDetail *dao.ServiceDetail) {
-			t.tcpServerRunOnce(serviceDetail)
+			t.tcpServerRunOnce(serviceDetail, 0)
 		}(tmpItem)
 	}
 	dao.ServiceManagerHandler.Register(t)
@@ -100,7 +116,26 @@ func (t *TcpManager) Update(e *dao.ServiceEvent) {
 		if addService.Info.LoadType != public.LoadTypeTCP {
 			continue
 		}
-		go t.tcpServerRunOnce(addService)
+		go t.tcpServerRunOnce(addService, 0)
+	}
+	updateList := e.UpdateService
+	for _, updateService := range updateList {
+		if updateService.Info.LoadType != public.LoadTypeTCP {
+			continue
+		}
+		for _, tcpServer := range TcpManagerHandler.ServerList {
+			if updateService.Info.ServiceName != tcpServer.ServiceName {
+				continue
+			}
+			tcpServer.Close()
+			log.Printf(" [INFO] tcp_proxy_stop %v stopped\n", tcpServer.Addr)
+		}
+	}
+	for _, updateService := range updateList {
+		if updateService.Info.LoadType != public.LoadTypeTCP {
+			continue
+		}
+		go t.tcpServerRunOnce(updateService, 1)
 	}
 }
 
