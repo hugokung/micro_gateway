@@ -69,9 +69,9 @@ func (t *TcpManager) tcpServerRunOnce(service *dao.ServiceDetail, tp int) {
 	if tp != typeOfUpdate {
 		t.ServerList = append(t.ServerList, tcpServer)
 	} else {
-		for _, sl := range t.ServerList {
+		for i, sl := range t.ServerList {
 			if sl.ServiceName == service.Info.ServiceName {
-				sl = tcpServer
+				t.ServerList[i] = tcpServer
 				break
 			}
 		}

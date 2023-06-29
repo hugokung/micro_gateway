@@ -76,9 +76,9 @@ func (g *GrpcManager) grpcServerRunOnce(service *dao.ServiceDetail, tp int) {
 			Server:      s,
 		})
 	} else {
-		for _, sl := range g.ServerList {
+		for i, sl := range g.ServerList {
 			if sl.ServiceName == service.Info.ServiceName {
-				sl = &warpGrpcServer{
+				g.ServerList[i] = &warpGrpcServer{
 					Addr:        addr,
 					ServiceName: service.Info.ServiceName,
 					UpdateAt:    service.Info.UpdatedAt,
@@ -99,7 +99,11 @@ func (g *GrpcManager) GrpcServerRun() {
 	serviceList := dao.ServiceManagerHandler.GetGrpcServiceList()
 	for _, serviceItem := range serviceList {
 		tmpItem := serviceItem
-		g.grpcServerRunOnce(tmpItem, typeOfOther)
+		// g.grpcServerRunOnce(tmpItem, typeOfOther)
+		log.Printf(" [INFO] Grpc_Proxy_Run:%v\n", tmpItem.GRPCRule.Port)
+		go func(serviceDetail *dao.ServiceDetail) {
+			g.grpcServerRunOnce(serviceDetail, typeOfOther)
+		}(tmpItem)
 	}
 	dao.ServiceManagerHandler.Register(g)
 }
@@ -135,9 +139,20 @@ func (g *GrpcManager) Update(e *dao.ServiceEvent) {
 			if grpcServer.ServiceName != updateService.Info.ServiceName {
 				continue
 			}
-			grpcServer.GracefulStop()
+			wait := sync.WaitGroup{}
+			wait.Add(1)
+			go func() {
+				defer func() {
+					wait.Done()
+					if err := recover(); err != nil {
+						log.Println(err)
+					}
+				}()
+				grpcServer.GracefulStop()
+			}()
+			wait.Wait()
 			log.Printf(" [INFO] grpc_proxy_stop %v stopped\n", grpcServer.Addr)
-			break
+			// break
 		}
 	}
 	for _, updateService := range updateList {
