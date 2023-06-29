@@ -59,10 +59,11 @@ func (t *TcpManager) tcpServerRunOnce(service *dao.ServiceDetail, tp int) {
 
 	baseCtx := context.WithValue(context.Background(), "service", service)
 	tcpServer := &tcp_server.TcpServer{
-		Addr:     addr,
-		Handler:  routerHandler,
-		BaseCtx:  baseCtx,
-		UpdateAt: service.Info.UpdatedAt,
+		Addr:        addr,
+		Handler:     routerHandler,
+		BaseCtx:     baseCtx,
+		UpdateAt:    service.Info.UpdatedAt,
+		ServiceName: service.Info.ServiceName,
 	}
 
 	if tp != typeOfUpdate {
@@ -90,7 +91,7 @@ func (t *TcpManager) TcpServerRun() {
 		tmpItem := serviceItem
 		log.Printf(" [INFO] Tcp_Proxy_Run:%v\n", tmpItem.TCPRule.Port)
 		go func(serviceDetail *dao.ServiceDetail) {
-			t.tcpServerRunOnce(serviceDetail, 0)
+			t.tcpServerRunOnce(serviceDetail, typeOfOther)
 		}(tmpItem)
 	}
 	dao.ServiceManagerHandler.Register(t)
@@ -116,7 +117,7 @@ func (t *TcpManager) Update(e *dao.ServiceEvent) {
 		if addService.Info.LoadType != public.LoadTypeTCP {
 			continue
 		}
-		go t.tcpServerRunOnce(addService, 0)
+		go t.tcpServerRunOnce(addService, typeOfOther)
 	}
 	updateList := e.UpdateService
 	for _, updateService := range updateList {
@@ -129,13 +130,14 @@ func (t *TcpManager) Update(e *dao.ServiceEvent) {
 			}
 			tcpServer.Close()
 			log.Printf(" [INFO] tcp_proxy_stop %v stopped\n", tcpServer.Addr)
+			break
 		}
 	}
 	for _, updateService := range updateList {
 		if updateService.Info.LoadType != public.LoadTypeTCP {
 			continue
 		}
-		go t.tcpServerRunOnce(updateService, 1)
+		go t.tcpServerRunOnce(updateService, typeOfUpdate)
 	}
 }
 
