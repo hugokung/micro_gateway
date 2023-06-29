@@ -101,7 +101,7 @@ func (t *TcpManager) Update(e *dao.ServiceEvent) {
 	log.Printf("TcpManager.Update")
 	delList := e.DeleteService
 	for _, delService := range delList {
-		if delService.Info.LoadType == public.LoadTypeTCP {
+		if delService.Info.LoadType != public.LoadTypeTCP {
 			continue
 		}
 		for _, tcpServer := range TcpManagerHandler.ServerList {

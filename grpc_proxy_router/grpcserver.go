@@ -15,6 +15,11 @@ import (
 	"google.golang.org/grpc"
 )
 
+const (
+	typeOfUpdate int = iota + 1
+	typeOfOther
+)
+
 type GrpcManager struct {
 	ServerList []*warpGrpcServer
 }
@@ -36,7 +41,7 @@ func init() {
 	GrpcManagerHandler = NewGrpcManager()
 }
 
-func (g *GrpcManager) grpcServerRunOnce(service *dao.ServiceDetail) {
+func (g *GrpcManager) grpcServerRunOnce(service *dao.ServiceDetail, tp int) {
 	addr := fmt.Sprintf(":%d", service.GRPCRule.Port)
 	rb, err := dao.LoadBalancerHandler.GetLoadBalancer(service)
 	if err != nil {
@@ -63,13 +68,27 @@ func (g *GrpcManager) grpcServerRunOnce(service *dao.ServiceDetail) {
 		),
 		grpc.CustomCodec(proxy.Codec()),
 		grpc.UnknownServiceHandler(grpcHandler))
+	if tp != typeOfUpdate {
+		GrpcManagerHandler.ServerList = append(GrpcManagerHandler.ServerList, &warpGrpcServer{
+			Addr:        addr,
+			ServiceName: service.Info.ServiceName,
+			UpdateAt:    service.Info.UpdatedAt,
+			Server:      s,
+		})
+	} else {
+		for _, sl := range g.ServerList {
+			if sl.ServiceName == service.Info.ServiceName {
+				sl = &warpGrpcServer{
+					Addr:        addr,
+					ServiceName: service.Info.ServiceName,
+					UpdateAt:    service.Info.UpdatedAt,
+					Server:      s,
+				}
+				break
+			}
+		}
+	}
 
-	GrpcManagerHandler.ServerList = append(GrpcManagerHandler.ServerList, &warpGrpcServer{
-		Addr:        addr,
-		ServiceName: service.Info.ServiceName,
-		UpdateAt:    service.Info.UpdatedAt,
-		Server:      s,
-	})
 	log.Printf(" [INFO] grpc_proxy_run %v\n", addr)
 	if err := s.Serve(lis); err != nil {
 		log.Printf(" [INFO] grpc_proxy_run %v err:%v\n", addr, err)
@@ -80,7 +99,7 @@ func (g *GrpcManager) GrpcServerRun() {
 	serviceList := dao.ServiceManagerHandler.GetGrpcServiceList()
 	for _, serviceItem := range serviceList {
 		tmpItem := serviceItem
-		g.grpcServerRunOnce(tmpItem)
+		g.grpcServerRunOnce(tmpItem, typeOfOther)
 	}
 	dao.ServiceManagerHandler.Register(g)
 }
@@ -89,7 +108,7 @@ func (g *GrpcManager) Update(e *dao.ServiceEvent) {
 	log.Printf("GrpcManager.Update")
 	delList := e.DeleteService
 	for _, delService := range delList {
-		if delService.Info.LoadType == public.LoadTypeGRPC {
+		if delService.Info.LoadType != public.LoadTypeGRPC {
 			continue
 		}
 		for _, grpcServer := range GrpcManagerHandler.ServerList {
@@ -105,7 +124,27 @@ func (g *GrpcManager) Update(e *dao.ServiceEvent) {
 		if addService.Info.LoadType != public.LoadTypeGRPC {
 			continue
 		}
-		go g.grpcServerRunOnce(addService)
+		go g.grpcServerRunOnce(addService, typeOfOther)
+	}
+	updateList := e.UpdateService
+	for _, updateService := range updateList {
+		if updateService.Info.LoadType != public.LoadTypeGRPC {
+			continue
+		}
+		for _, grpcServer := range GrpcManagerHandler.ServerList {
+			if grpcServer.ServiceName != updateService.Info.ServiceName {
+				continue
+			}
+			grpcServer.GracefulStop()
+			log.Printf(" [INFO] grpc_proxy_stop %v stopped\n", grpcServer.Addr)
+			break
+		}
+	}
+	for _, updateService := range updateList {
+		if updateService.Info.LoadType != public.LoadTypeGRPC {
+			continue
+		}
+		go g.grpcServerRunOnce(updateService, typeOfUpdate)
 	}
 }
 
