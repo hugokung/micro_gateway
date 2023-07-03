@@ -10,14 +10,14 @@ import (
 
 func TCPWhileListMiddleware() func(c *TcpSliceRouterContext) {
 	return func(ctx *TcpSliceRouterContext) {
-		serviceInterface:= ctx.Get("service")
+		serviceInterface := ctx.Get("service")
 		if serviceInterface == nil {
 			ctx.conn.Write([]byte("service not found"))
 			ctx.Abort()
 			return
 		}
 		serviceDetail := serviceInterface.(*dao.ServiceDetail)
-		whileList := []string{}
+		var whileList []string
 		if serviceDetail.AccessControl.WhiteList != "" {
 			whileList = strings.Split(serviceDetail.AccessControl.WhiteList, ",")
 		}

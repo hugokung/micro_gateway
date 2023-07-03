@@ -10,15 +10,15 @@ import (
 
 func TCPBlacListMiddleware() func(c *TcpSliceRouterContext) {
 	return func(ctx *TcpSliceRouterContext) {
-		serviceInterface:= ctx.Get("service")
+		serviceInterface := ctx.Get("service")
 		if serviceInterface == nil {
 			ctx.conn.Write([]byte("service not found"))
 			ctx.Abort()
 			return
 		}
 		serviceDetail := serviceInterface.(*dao.ServiceDetail)
-		whileList := []string{}
-		blackList := []string{}
+		var whileList []string
+		var blackList []string
 
 		if serviceDetail.AccessControl.BlackList != "" {
 			blackList = strings.Split(serviceDetail.AccessControl.BlackList, ",")

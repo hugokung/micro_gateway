@@ -10,22 +10,21 @@ import (
 
 const abortIndex int8 = math.MaxInt8 / 2 //最多 63 个中间件
 
-// 知其然也知其所以然
 type TcpHandlerFunc func(*TcpSliceRouterContext)
 
-// router 结构体
+// TcpSliceRouter router 结构体
 type TcpSliceRouter struct {
 	groups []*TcpSliceGroup
 }
 
-// group 结构体
+// TcpSliceGroup group 结构体
 type TcpSliceGroup struct {
 	*TcpSliceRouter
 	path     string
 	handlers []TcpHandlerFunc
 }
 
-// router上下文
+// TcpSliceRouterContext router上下文
 type TcpSliceRouterContext struct {
 	conn net.Conn
 	Ctx  context.Context
@@ -75,7 +74,7 @@ func NewTcpSliceRouter() *TcpSliceRouter {
 	return &TcpSliceRouter{}
 }
 
-// 创建 Group
+// Group 创建 Group
 func (g *TcpSliceRouter) Group(path string) *TcpSliceGroup {
 	if path != "/" {
 		panic("only accept path=/")

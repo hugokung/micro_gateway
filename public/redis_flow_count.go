@@ -18,7 +18,7 @@ type RedisFlowCountService struct {
 	TotalCount  int64
 }
 
-func NewRedisFlowCountService(appID string, interval time.Duration) (*RedisFlowCountService) {
+func NewRedisFlowCountService(appID string, interval time.Duration) *RedisFlowCountService {
 	reqCounter := &RedisFlowCountService{
 		AppID:    appID,
 		Interval: interval,
@@ -32,9 +32,10 @@ func NewRedisFlowCountService(appID string, interval time.Duration) (*RedisFlowC
 			}
 		}()
 		ticker := time.NewTicker(interval)
+		//TODO: ticker没有关闭？
 		for {
 			<-ticker.C
-			tickerCount := atomic.LoadInt64(&reqCounter.TickerCount)     //获取数据
+			tickerCount := atomic.LoadInt64(&reqCounter.TickerCount) //获取数据
 			atomic.StoreInt64(&reqCounter.TickerCount, 0)            //重置数据
 
 			currentTime := time.Now()
@@ -42,9 +43,9 @@ func NewRedisFlowCountService(appID string, interval time.Duration) (*RedisFlowC
 			hourKey := reqCounter.GetHourKey(currentTime)
 			if err := RedisConfPipline(func(c redis.Conn) {
 				c.Send("INCRBY", dayKey, tickerCount)
-				c.Send("EXPIRE", dayKey, 86400 * 2)
+				c.Send("EXPIRE", dayKey, 86400*2)
 				c.Send("INCRBY", hourKey, tickerCount)
-				c.Send("EXPIRE", hourKey, 86400 * 2)
+				c.Send("EXPIRE", hourKey, 86400*2)
 			}); err != nil {
 				fmt.Println("redisConfPipline err", err)
 				continue
@@ -89,8 +90,7 @@ func (o *RedisFlowCountService) GetDayData(t time.Time) (int64, error) {
 	return redis.Int64(RedisConfDo("GET", o.GetDayKey(t)))
 }
 
-
-//原子增加
+// Increase 原子增加
 func (o *RedisFlowCountService) Increase() {
 	go func() {
 		defer func() {
