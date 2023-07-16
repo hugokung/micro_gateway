@@ -54,4 +54,5 @@ docker run --name gateway_server --net host -e TZ=Asia/Shanghai -d dockerfile-se
 ```
 
 ### 💻API文档
-待完善......
+生成接口文档：swag init  
+然后启动服务器：go run main.go，浏览地址: http://127.0.0.1:8880/swagger/index.html
