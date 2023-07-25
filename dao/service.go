@@ -155,7 +155,7 @@ func (s *ServiceManager) LoadAndWatch() error {
 			time.Sleep(10 * time.Second)
 			ns := s.LoadService()
 			if ns.err != nil {
-				log.Printf("ns.err:%v ns.UpdateAt:%v\n", ns.err)
+				log.Printf("ns.err:%v ns.UpdateAt:%v\n", ns.err, ns.UpdateAt)
 				continue
 			}
 			if ns.UpdateAt != s.UpdateAt || len(ns.ServiceSlice) != len(s.ServiceSlice) {

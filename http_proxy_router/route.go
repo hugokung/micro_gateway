@@ -9,6 +9,7 @@ import (
 
 func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 
+	gin.SetMode("release")
 	router := gin.Default()
 	router.Use(middlewares...)
 	router.GET("/ping", func(c *gin.Context) {
@@ -22,19 +23,18 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	{
 		controller.OAuthRegister(oauth)
 	}
-	root := router.Group("/")
-	root.Use(
-	http_proxy_middleware.HTTPAccessModeMiddleware(), 
-	http_proxy_middleware.HTTPFlowCountMiddleware(),
-	http_proxy_middleware.HTTPFlowLimitMiddleware(),
-	http_proxy_middleware.HTTPJwtAuthTokenMiddleware(),
-	http_proxy_middleware.HTTPJwtFlowCountMiddleware(),
-	http_proxy_middleware.HTTPJwtFlowLimitMiddleware(),
-	http_proxy_middleware.HTTPWhileListMiddleware(),
-	http_proxy_middleware.HTTPBlacListMiddleware(),
-	http_proxy_middleware.HTTPHeaderTransferMiddleware(), 
-	http_proxy_middleware.HTTPStripUriMiddleware(),
-	http_proxy_middleware.HTTPUrlRewriteMiddleware(),
-	http_proxy_middleware.HTTPReverseProxyMiddleware())
+	router.Use(
+		http_proxy_middleware.HTTPAccessModeMiddleware(),
+		http_proxy_middleware.HTTPFlowCountMiddleware(),
+		http_proxy_middleware.HTTPFlowLimitMiddleware(),
+		http_proxy_middleware.HTTPJwtAuthTokenMiddleware(),
+		http_proxy_middleware.HTTPJwtFlowCountMiddleware(),
+		http_proxy_middleware.HTTPJwtFlowLimitMiddleware(),
+		http_proxy_middleware.HTTPWhileListMiddleware(),
+		http_proxy_middleware.HTTPBlacListMiddleware(),
+		http_proxy_middleware.HTTPHeaderTransferMiddleware(),
+		http_proxy_middleware.HTTPStripUriMiddleware(),
+		http_proxy_middleware.HTTPUrlRewriteMiddleware(),
+		http_proxy_middleware.HTTPReverseProxyMiddleware())
 	return router
 }
