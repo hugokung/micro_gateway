@@ -1,11 +1,12 @@
-package response 
+package response
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/e421083458/golang_common/lib"
-	"github.com/gin-gonic/gin"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/hugokung/micro_gateway/pkg/golang_common/lib"
 )
 
 type ResponseCode int

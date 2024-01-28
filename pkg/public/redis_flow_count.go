@@ -5,8 +5,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/e421083458/golang_common/lib"
 	"github.com/garyburd/redigo/redis"
+	"github.com/hugokung/micro_gateway/pkg/golang_common/lib"
 )
 
 type RedisFlowCountService struct {

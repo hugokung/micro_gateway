@@ -1,8 +1,8 @@
 package public
 
 import (
-	"github.com/e421083458/golang_common/lib"
 	"github.com/garyburd/redigo/redis"
+	"github.com/hugokung/micro_gateway/pkg/golang_common/lib"
 )
 
 func RedisConfPipline(pip ...func(c redis.Conn)) error {

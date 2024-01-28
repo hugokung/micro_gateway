@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/e421083458/golang_common/lib"
 	"github.com/gin-gonic/gin"
 	"github.com/hugokung/micro_gateway/internal/dao"
 	"github.com/hugokung/micro_gateway/internal/dto"
+	"github.com/hugokung/micro_gateway/pkg/golang_common/lib"
 	"github.com/hugokung/micro_gateway/pkg/public"
 	"github.com/hugokung/micro_gateway/pkg/response"
 	"github.com/pkg/errors"

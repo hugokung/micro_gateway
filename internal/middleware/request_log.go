@@ -2,11 +2,12 @@ package middleware
 
 import (
 	"bytes"
-	"github.com/hugokung/micro_gateway/pkg/public"
-	"github.com/e421083458/golang_common/lib"
-	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/hugokung/micro_gateway/pkg/golang_common/lib"
+	"github.com/hugokung/micro_gateway/pkg/public"
 )
 
 // 请求进入日志

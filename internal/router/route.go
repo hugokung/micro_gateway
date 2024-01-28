@@ -3,12 +3,12 @@ package router
 import (
 	"log"
 
-	"github.com/e421083458/golang_common/lib"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/hugokung/micro_gateway/api"
 	"github.com/hugokung/micro_gateway/docs"
 	"github.com/hugokung/micro_gateway/internal/middleware"
+	"github.com/hugokung/micro_gateway/pkg/golang_common/lib"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
 )

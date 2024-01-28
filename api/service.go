@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/e421083458/golang_common/lib"
 	"github.com/gin-gonic/gin"
 	"github.com/hugokung/micro_gateway/internal/dao"
 	"github.com/hugokung/micro_gateway/internal/dto"
+	"github.com/hugokung/micro_gateway/pkg/golang_common/lib"
 	"github.com/hugokung/micro_gateway/pkg/public"
 	"github.com/hugokung/micro_gateway/pkg/response"
 	"github.com/pkg/errors"
@@ -124,7 +124,6 @@ func (service *ServiceController) ServiceInfoList(c *gin.Context) {
 	}
 	out.InfoList = itemList
 	response.ResponseSuccess(c, out)
-	return
 }
 
 // ServiceDelete godoc
@@ -161,7 +160,6 @@ func (s *ServiceController) ServiceDelete(c *gin.Context) {
 		return
 	}
 	response.ResponseSuccess(c, "")
-	return
 }
 
 // ServiceAddHTTP godoc

@@ -6,9 +6,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/e421083458/golang_common/lib"
 	"github.com/hugokung/micro_gateway/internal/dao"
 	"github.com/hugokung/micro_gateway/internal/server"
+	"github.com/hugokung/micro_gateway/pkg/golang_common/lib"
 )
 
 var (
