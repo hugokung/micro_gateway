@@ -36,7 +36,7 @@ go mod tidy
 ```
 - 创建数据库并导入
 ```shell
-mysql -h localhost -u root -p -e "CREATE DATABASE go_gateway DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;"
+mysql -h localhost -u root -p -e "CREATE DATABASE mirco_gateway DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;"
 mysql -h localhost -u root -p mirco_gateway < gateway.sql --default-character-set=utf8
 ```
 - 脚本快速编译部署

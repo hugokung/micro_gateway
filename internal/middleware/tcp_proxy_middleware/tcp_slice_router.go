@@ -56,8 +56,11 @@ type TcpSliceRouterHandler struct {
 func (w *TcpSliceRouterHandler) ServeTCP(ctx context.Context, conn net.Conn) {
 	c := newTcpSliceRouterContext(conn, w.router, ctx)
 	c.handlers = append(c.handlers, func(c *TcpSliceRouterContext) {
+		//加入实现TCP反向代理的handler插件
 		w.coreFunc(c).ServeTCP(ctx, conn)
 	})
+
+	//开始依次执行加入的插件
 	c.Reset()
 	c.Next()
 }

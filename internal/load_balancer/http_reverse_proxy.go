@@ -1,6 +1,7 @@
 package load_balancer
 
 import (
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -15,6 +16,7 @@ func NewLoadBalanceReverseProxy(c *gin.Context, lb load_balance.LoadBalance, tra
 	//请求协调者
 	director := func(req *http.Request) {
 		nextAddr, err := lb.Get(req.URL.String())
+		log.Printf("req.URL.String: %v, nextAddr: %v", req.URL.String(), nextAddr)
 		if err != nil {
 			panic("get next addr fail")
 		}

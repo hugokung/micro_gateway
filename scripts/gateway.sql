@@ -1,4 +1,4 @@
-use gateway;
+use mirco_gateway;
 -- phpMyAdmin SQL Dump
 -- version 4.7.0
 -- https://www.phpmyadmin.net/

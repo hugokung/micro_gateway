@@ -54,5 +54,6 @@ func (c *conn) serve(ctx context.Context) {
 	if c.server.Handler == nil {
 		panic("handler empty")
 	}
+	//调用tcp_slice_router.go TcpSliceRouterHandler的ServerTCP
 	c.server.Handler.ServeTCP(ctx, c.rwc)
 }
