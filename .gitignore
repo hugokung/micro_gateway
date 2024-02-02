@@ -7,3 +7,5 @@ logs/*
 dist/*
 bin/*
 .DS_Store
+.vscode/
+*.log

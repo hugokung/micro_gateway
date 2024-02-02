@@ -26,7 +26,7 @@
 [swagger]
     title="gin_scaffold swagger API"
     desc="This is a sample server celler server."
-    host="139.9.222.12:8880"
+    host="0.0.0.0:8880"
     base_path=""
     
 [cluster]

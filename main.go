@@ -6,12 +6,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/e421083458/golang_common/lib"
-	"github.com/hugokung/micro_gateway/dao"
-	"github.com/hugokung/micro_gateway/grpc_proxy_router"
-	"github.com/hugokung/micro_gateway/http_proxy_router"
-	"github.com/hugokung/micro_gateway/router"
-	"github.com/hugokung/micro_gateway/tcp_proxy_router"
+	"github.com/hugokung/micro_gateway/internal/dao"
+	"github.com/hugokung/micro_gateway/internal/server"
+	"github.com/hugokung/micro_gateway/pkg/golang_common/lib"
 )
 
 var (
@@ -34,13 +31,13 @@ func main() {
 	if *endpoint == "dashboard" {
 		lib.InitModule(*config, []string{"base", "mysql", "redis"})
 		defer lib.Destroy()
-		router.HttpServerRun()
+		server.HttpServerRun()
 
 		quit := make(chan os.Signal)
 		signal.Notify(quit, syscall.SIGKILL, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
 		<-quit
 
-		router.HttpServerStop()
+		server.HttpServerStop()
 	} else {
 		lib.InitModule(*config, []string{"base", "mysql", "redis"})
 		defer lib.Destroy()
@@ -50,24 +47,24 @@ func main() {
 		//加载租户信息到内存
 		dao.AppManagerHandler.LoadAndWatch()
 		go func() {
-			http_proxy_router.HttpServerRun()
+			server.HttpProxyServerRun()
 		}()
 		go func() {
-			http_proxy_router.HttpsServerRun()
+			server.HttpsProxyServerRun()
 		}()
 		go func() {
-			tcp_proxy_router.TcpManagerHandler.TcpServerRun()
+			server.TcpManagerHandler.TcpServerRun()
 		}()
 		go func() {
-			grpc_proxy_router.GrpcManagerHandler.GrpcServerRun()
+			server.GrpcManagerHandler.GrpcServerRun()
 		}()
 		quit := make(chan os.Signal)
 		signal.Notify(quit, syscall.SIGKILL, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
 		<-quit
-		tcp_proxy_router.TcpManagerHandler.TcpServerStop()
-		grpc_proxy_router.GrpcManagerHandler.GrpcServerStop()
-		http_proxy_router.HttpServerStop()
-		http_proxy_router.HttpsServerStop()
+		server.TcpManagerHandler.TcpServerStop()
+		server.GrpcManagerHandler.GrpcServerStop()
+		server.HttpProxyServerStop()
+		server.HttpsProxyServerStop()
 	}
 
 }
