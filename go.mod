@@ -15,7 +15,9 @@ require (
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/golang/protobuf v1.5.3
 	github.com/gorilla/sessions v1.1.3 // indirect
+	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/mwitkow/grpc-proxy v0.0.0-20230212185441-f345521cb9c9 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/samuel/go-zookeeper v0.0.0-20201211165307-7117e9ea2414
@@ -25,7 +27,9 @@ require (
 	github.com/swaggo/swag v1.8.10
 	golang.org/x/time v0.3.0
 	golang.org/x/tools v0.6.0 // indirect
+	google.golang.org/genproto v0.0.0-20210401141331-865547bb08e2
 	google.golang.org/grpc v1.36.1
+	google.golang.org/protobuf v1.28.1
 	gopkg.in/go-playground/validator.v9 v9.29.0
 	gorm.io/driver/mysql v1.2.1
 	gorm.io/gorm v1.22.4

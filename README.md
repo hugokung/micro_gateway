@@ -52,6 +52,12 @@ docker run --name dashboard --net host -e TZ=Asia/Shanghai -d dockerfile-dashboa
 ```shell
 docker run --name gateway_server --net host -e TZ=Asia/Shanghai -d dockerfile-server:latest
 ```
+代理方式
+- Http代理：通过`HttpRule.Rule`字段实现不同下游服务的转发
+- TCP代理：通过`TcpRule.Port`字段实现不同tcp服务的转发
+
+### TODO
+- 指标监控
 
 ### 💻API文档
 生成接口文档：swag init  
