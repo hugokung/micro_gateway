@@ -25,3 +25,28 @@ go run main.go
 ```go
 go run main.go
 ```
+
+### GRPC测试环境配置
+
+`https://github.com/grpc-ecosystem/grpc-gateway`
+- 开启 go mod `export GO111MODULE=on`
+- 开启代理 go mod `export GOPROXY=https://goproxy.io`
+- 执行安装命令
+
+``` shell
+go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
+go install  github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+go install github.com/golang/protobuf/protoc-gen-go
+```
+
+### 构建grpc-gateway 测试服务端
+
+- 编写 `echo-gateway.proto`
+- 运行IDL生成命令
+```
+protoc -I/usr/local/include -I. -I/root/go/pkg/mod/github.com/grpc-ecosystem/grpc-gateway@v1.16.0/third_party/googleapis --go_out=plugins=grpc:proto echo-gateway.proto
+```
+- 运行gateway生成命令
+```
+protoc -I/usr/local/include -I. -I/root/go/pkg/mod/github.com/grpc-ecosystem/grpc-gateway@v1.16.0/third_party/googleapis --grpc-gateway_out=logtostderr=true:proto echo-gateway.proto
+```
