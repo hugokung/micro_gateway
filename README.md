@@ -31,7 +31,7 @@
 - 下载类库依赖
 ```shell
 export GO111MODULE=on && export GOPROXY=https://goproxy.cn
-cd go_gateway
+cd mirco_gateway
 go mod tidy
 ```
 - 创建数据库并导入
