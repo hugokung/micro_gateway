@@ -13,7 +13,6 @@ import (
 	"github.com/hugokung/micro_gateway/internal/service"
 	"github.com/hugokung/micro_gateway/pkg/golang_common/lib"
 	"github.com/sourcegraph/conc"
-	_ "net/http/pprof"
 )
 
 var (
