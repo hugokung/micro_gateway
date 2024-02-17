@@ -39,9 +39,10 @@ go mod tidy
 mysql -h localhost -u root -p -e "CREATE DATABASE mirco_gateway DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;"
 mysql -h localhost -u root -p mirco_gateway < gateway.sql --default-character-set=utf8
 ```
-- 脚本快速编译部署
+- 快速编译部署测试
 ```shell
-sh onekeyupdate.sh
+make build_dev
+sh run.sh
 ```
 - 使用Docker部署  
 部署网关管理服务
@@ -61,6 +62,7 @@ docker run --name gateway_server --net host -e TZ=Asia/Shanghai -d dockerfile-se
 - GRPC代理：通过`GrpcRule.Port`字段实现不同GRPC服务的转发
 
 ### TODO
+- ✅ 增加pprof
 - 指标监控
 
 ### 💻API文档
