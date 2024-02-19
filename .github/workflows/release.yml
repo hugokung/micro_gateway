@@ -25,7 +25,6 @@ jobs:
         make linux-amd64
         make darwin-amd64
         make darwin-arm64
-        make windows-x64
 
     # 编译 Vue 项目
     - name: Setup Node.js environment
@@ -49,15 +48,10 @@ jobs:
         cp -r web/dist ./release/linux-amd64/mirco_gateway/
         cp -r web/dist ./release/darwin-amd64/mirco_gateway/
         cp -r web/dist ./release/darwin-arm64/mirco_gateway/ 
-        cp -r web/dist ./release/windows-amd64/mirco_gateway/
-        pwd
-        ls ./release
     
     - name: Release
       run: |
         make release
-        pwd
-        ls ./release
 
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@v4

@@ -7,7 +7,6 @@ checksum:
   - glob: ./release/linux-amd64/*.zip
   - glob: ./release/darwin-amd64/*.zip
   - glob: ./release/darwin-arm64/*.zip 
-  - glob: ./release/windows-amd64/*.zip
 release:
   # Same as for github
   # Note: it can only be one: either github, gitlab or gitea
@@ -25,4 +24,3 @@ release:
     - glob: ./release/linux-amd64/*.zip
     - glob: ./release/darwin-amd64/*.zip
     - glob: ./release/darwin-arm64/*.zip 
-    - glob: ./release/windows-amd64/*.zip
