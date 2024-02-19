@@ -19,4 +19,4 @@ release:
   # another file with the same name exists, the latest one found will be used.
   # Defaults to empty.
   extra_files:
-    - glob: *.zip
+    - glob: ./release/*.zip
