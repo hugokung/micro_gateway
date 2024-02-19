@@ -35,7 +35,7 @@ jobs:
     - name: Install dependencies
       run: |
         cd web
-        git config --global url."https://github.com/"
+        git config --global url."https://".insteadOf git://
         npm install
         cd -
     - name: Build Vue
