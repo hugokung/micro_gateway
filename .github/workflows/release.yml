@@ -2,8 +2,6 @@ name: Release
 
 on:
   push:
-    branches:
-      - master  # 触发条件可以根据你的需求修改
     tags:
       - '*'
 
@@ -35,7 +33,10 @@ jobs:
       with:
         node-version: '14'
     - name: Install dependencies
-      run: npm install
+      run: |
+        cd web
+        npm install
+        cd -
     - name: Build Vue
       run: |
         cd web
