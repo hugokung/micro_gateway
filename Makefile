@@ -15,10 +15,13 @@ RELEASE_ROOT = release
 RELEASE_FILES = LICENSE README.md run.sh shutdown.sh
 RELEASE_LINUX_AMD64 = $(RELEASE_ROOT)/linux-amd64/$(TARGET)
 RELEASE_LINUX_AMD64_BIN = $(RELEASE_ROOT)/linux-amd64/$(TARGET)/bin 
+
 RELEASE_DARWIN_AMD64 = $(RELEASE_ROOT)/darwin-amd64/$(TARGET)
 RELEASE_DARWIN_AMD64_BIN = $(RELEASE_ROOT)/darwin-amd64/$(TARGET)/bin 
+
 RELEASE_DARWIN_ARM64 = $(RELEASE_ROOT)/darwin-arm64/$(TARGET)
 RELEASE_DARWIN_ARM64_BIN = $(RELEASE_ROOT)/darwin-arm64/$(TARGET)/bin 
+
 RELEASE_WINDOWS_AMD64 = $(RELEASE_ROOT)/windows-amd64/$(TARGET)
 RELEASE_WINDOWS_AMD64_BIN = $(RELEASE_ROOT)/windows-amd64/$(TARGET)/bin 
 
@@ -27,7 +30,7 @@ BUILD_DATE := $(shell date +'%Y-%m-%d %H:%M:%S')
 SHA_SHORT := $(shell git rev-parse --short HEAD)
 
 TAGS = ""
-MOD_NAME = github.com/hugokung/mirco_gateway
+MOD_NAME = github.com/hugokung/micro_gateway
 LDFLAGS = -X "${MOD_NAME}/pkg/version.version=${BUILD_VERSION}" \
           -X "${MOD_NAME}/pkg/version.buildDate=${BUILD_DATE}" \
           -X "${MOD_NAME}/pkg/version.commitID=${SHA_SHORT}" -w -s
@@ -66,23 +69,23 @@ release:
 .PHONY: linux-amd64
 linux-amd64:
 	@echo Build micro_gateway [linux-amd64] CGO_ENABLED=$(CGO_ENABLED)
-	@mkdir -p $(RELEASE_LINUX_AMD64)
-	@mkdir $(RELEASE_LINUX_AMD64_BIN)
-	@CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=amd64 go build -pgo=auto -trimpath -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $(RELEASE_LINUX_AMD64_BIN)/$(TARGET_BIN)
+	@mkdir -p $(RELEASE_LINUX_AMD64)/bin
+	# @mkdir -p $(RELEASE_LINUX_AMD64_BIN)
+	@CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=amd64 go build -pgo=auto -trimpath -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $(RELEASE_LINUX_AMD64)/bin/$(TARGET_BIN)
 
 .PHONY: darwin-amd64
 darwin-amd64:
 	@echo Build micro_gateway [darwin-amd64] CGO_ENABLED=$(CGO_ENABLED)
-	@mkdir -p $(RELEASE_DARWIN_AMD64)
-	@mkdir $(RELEASE_DARWIN_AMD64_BIN)
-	@CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=amd64 go build -pgo=auto -trimpath  -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $(RELEASE_DARWIN_AMD64_BIN)/$(TARGET_BIN)
+	@mkdir -p $(RELEASE_DARWIN_AMD64)/bin
+	# @mkdir -p $(RELEASE_DARWIN_AMD64_BIN)
+	@CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=amd64 go build -pgo=auto -trimpath  -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $(RELEASE_DARWIN_AMD64)/bin/$(TARGET_BIN)
 
 .PHONY: darwin-arm64
 darwin-arm64:
 	@echo Build micro_gateway [darwin-arm64] CGO_ENABLED=$(CGO_ENABLED)
-	@mkdir -p $(RELEASE_DARWIN_ARM64)
-	@mkdir $(RELEASE_DARWIN_ARM64_BIN)
-	@CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=arm64 go build -pgo=auto -trimpath -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $(RELEASE_DARWIN_ARM64_BIN)/$(TARGET_BIN)
+	@mkdir -p $(RELEASE_DARWIN_ARM64)/bin
+	# @mkdir -p $(RELEASE_DARWIN_ARM64_BIN)
+	@CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=arm64 go build -pgo=auto -trimpath -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $(RELEASE_DARWIN_ARM64)/bin/$(TARGET_BIN)
 
 # .PHONY: windows-x64
 # windows-x64:

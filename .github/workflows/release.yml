@@ -1,6 +1,7 @@
 name: Release
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - '*'
@@ -45,9 +46,9 @@ jobs:
 
     - name: Copy dist directory
       run: |
-        cp -r web/dist ./release/linux-amd64/mirco_gateway/
-        cp -r web/dist ./release/darwin-amd64/mirco_gateway/
-        cp -r web/dist ./release/darwin-arm64/mirco_gateway/ 
+        cp -r web/dist ./release/linux-amd64/micro_gateway/
+        cp -r web/dist ./release/darwin-amd64/micro_gateway/
+        cp -r web/dist ./release/darwin-arm64/micro_gateway/ 
     
     - name: Release
       run: |
