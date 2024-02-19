@@ -50,10 +50,14 @@ jobs:
         cp -r web/dist ./release/darwin-amd64/mirco_gateway/
         cp -r web/dist ./release/darwin-arm64/mirco_gateway/ 
         cp -r web/dist ./release/windows-amd64/mirco_gateway/
+        pwd
         ls ./release
     
     - name: Release
-      run: make release
+      run: |
+        make release
+        pwd
+        ls ./release
 
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@v4
