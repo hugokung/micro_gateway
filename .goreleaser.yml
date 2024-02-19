@@ -4,7 +4,7 @@ checksum:
   name_template: '{{ .ProjectName }}_sha256_checksums.txt'
   algorithm: sha256
   extra_files:
-  - glob: *.zip
+  - glob: ./release/*.zip
 release:
   # Same as for github
   # Note: it can only be one: either github, gitlab or gitea
