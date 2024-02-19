@@ -50,6 +50,7 @@ jobs:
         cp -r web/dist ./release/darwin-amd64/mirco_gateway/
         cp -r web/dist ./release/darwin-arm64/mirco_gateway/ 
         cp -r web/dist ./release/windows-amd64/mirco_gateway/
+        ls ./release
     
     - name: Release
       run: make release

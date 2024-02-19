@@ -48,12 +48,12 @@ run_dev:
 	@go run -pgo=auto -tags '$(TAGS)' .	
 
 .PHONY: release
-release: linux-amd64 darwin-amd64 darwin-arm64 windows-x64
+release:
 	@echo Package mirco_gateway
-	@cp -rf $(RELEASE_FILES) $(RELEASE_LINUX_AMD64) && mkdir $(RELEASE_LINUX_AMD64)/conf && cp -rf conf $(RELEASE_LINUX_AMD64)/conf 
-	@cp -rf $(RELEASE_FILES) $(RELEASE_DARWIN_AMD64) && mkdir $(RELEASE_DARWIN_AMD64)/conf && cp -rf conf $(RELEASE_DARWIN_AMD64)/conf
-	@cp -rf $(RELEASE_FILES) $(RELEASE_DARWIN_ARM64) && mkdir $(RELEASE_DARWIN_ARM64)/conf && cp -rf conf $(RELEASE_DARWIN_ARM64)/conf
-	@cp -rf $(RELEASE_FILES) $(RELEASE_WINDOWS_AMD64) && mkdir $(RELEASE_WINDOWS_AMD64)/conf && cp -rf conf $(RELEASE_WINDOWS_AMD64)/conf
+	@cp -rf $(RELEASE_FILES) $(RELEASE_LINUX_AMD64) && cp -rf conf $(RELEASE_LINUX_AMD64)/ 
+	@cp -rf $(RELEASE_FILES) $(RELEASE_DARWIN_AMD64) && cp -rf conf $(RELEASE_DARWIN_AMD64)/
+	@cp -rf $(RELEASE_FILES) $(RELEASE_DARWIN_ARM64) && cp -rf conf $(RELEASE_DARWIN_ARM64)/
+	@cp -rf $(RELEASE_FILES) $(RELEASE_WINDOWS_AMD64) && cp -rf conf $(RELEASE_WINDOWS_AMD64)/
 	@cd $(RELEASE_LINUX_AMD64)/.. && rm -f *.zip && zip -r $(TARGET)-linux_amd64.zip $(TARGET) && cd -
 	@cd $(RELEASE_DARWIN_AMD64)/.. && rm -f *.zip && zip -r $(TARGET)-darwin_amd64.zip $(TARGET) && cd -
 	@cd $(RELEASE_DARWIN_ARM64)/.. && rm -f *.zip && zip -r $(TARGET)-darwin_arm64.zip $(TARGET) && cd -
