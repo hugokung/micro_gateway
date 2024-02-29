@@ -1,3 +1,15 @@
+![Github Repo Stars](https://img.shields.io/github/stars/hugokung/micro_gateway?style=plastic
+)
+![License](https://img.shields.io/github/license/hugokung/micro_gateway?style=plastic&color=green
+)
+![Issue](https://img.shields.io/github/issues-search/hugokung/micro_gateway?query=is%3Aopen%20label%3Aenhancement&style=plastic&color=red
+)
+![Verison](https://img.shields.io/github/v/tag/hugokung/micro_gateway?sort=semver&style=plastic&label=version&color=yellow
+)
+![Build](https://img.shields.io/github/actions/workflow/status/hugokung/micro_gateway/release.yml?style=plastic
+)
+![Commit](https://img.shields.io/github/commits-since/hugokung/micro_gateway/latest?style=plastic&color=pink
+)
 <div align="center">
 
 <h3 align="center">Micro Gateway</h3>
