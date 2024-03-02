@@ -57,13 +57,6 @@ type ServiceAddTCPInput struct {
 	WeightList        string `json:"weight_list" form:"weight_list" comment:"权重列表" validate:"required,valid_weightlist"`
 	ForbidList        string `json:"forbid_list" form:"forbid_list" comment:"禁用IP列表" validate:"valid_iplist"`
 
-	Timeout                	int 	`json:"timeout" form:"timeout"`
-	MaxConcurrentRequests  	int 	`json:"max_concurrent_requests" form:"max_concurrent_requests"`
-	RequestVolumeThreshold 	int 	`json:"request_volume_threshold" form:"request_volume_threshold"`
-	SleepWindow            	int 	`json:"sleep_window" form:"sleep_window"`
-	ErrorPercentThreshold  	int 	`json:"error_percent_threshold" form:"error_percent_threshold"`
-	FallBackMsg				string	`json:"fall_back_msg" form:"fall_back_msg"`
-	NeedCircuit				int		`json:"need_circuit" form:"need_circuit"`
 }
 
 func (param *ServiceAddTCPInput) BindValidParam(c *gin.Context) error {
@@ -86,13 +79,6 @@ type ServiceUpdateTCPInput struct {
 	WeightList        string `json:"weight_list" form:"weight_list" comment:"权重列表" validate:"required,valid_weightlist"`
 	ForbidList        string `json:"forbid_list" form:"forbid_list" comment:"禁用IP列表" validate:"valid_iplist"`
 
-	Timeout                	int 	`json:"timeout" form:"timeout"`
-	MaxConcurrentRequests  	int 	`json:"max_concurrent_requests" form:"max_concurrent_requests"`
-	RequestVolumeThreshold 	int 	`json:"request_volume_threshold" form:"request_volume_threshold"`
-	SleepWindow            	int 	`json:"sleep_window" form:"sleep_window"`
-	ErrorPercentThreshold  	int 	`json:"error_percent_threshold" form:"error_percent_threshold"`
-	FallBackMsg				string	`json:"fall_back_msg" form:"fall_back_msg"`
-	NeedCircuit				int		`json:"need_circuit" form:"need_circuit"`
 }
 
 func (param *ServiceUpdateTCPInput) BindValidParam(c *gin.Context) error {

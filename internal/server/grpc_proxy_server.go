@@ -55,6 +55,7 @@ func (g *GrpcManager) grpcServerRunOnce(service *dao.ServiceDetail, tp int) {
 		grpc.ChainStreamInterceptor(
 			grpc_proxy_middleware.GrpcFlowCountMiddleware(service),
 			grpc_proxy_middleware.GrpcFlowLimitMiddleware(service),
+			grpc_proxy_middleware.GrpcCircuitBreakMiddleware(service),
 			grpc_proxy_middleware.GrpcJwtAuthTokenMiddleware(service),
 			grpc_proxy_middleware.GrpcJwtFlowCountMiddleware(service),
 			grpc_proxy_middleware.GrpcJwtFlowLimitMiddleware(service),

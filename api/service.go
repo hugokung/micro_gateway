@@ -531,27 +531,8 @@ func (s *ServiceController) ServiceAddTCP(c *gin.Context) {
 		return
 	}
 
-	circuitConfig := &dao.CircuitConfig{
-		ServiceID: serviceModel.ID,
-		Timeout: params.Timeout,
-		MaxConcurrentRequests: params.MaxConcurrentRequests,
-		RequestVolumeThreshold: params.RequestVolumeThreshold,
-		SleepWindow: params.SleepWindow,
-		ErrorPercentThreshold: params.ErrorPercentThreshold,
-		FallBackMsg: params.FallBackMsg,
-		NeedCircuit: params.NeedCircuit,
-		ServiceName: params.ServiceName,
-	}
-	if err := circuitConfig.Save(c, tx); err != nil {
-		tx.Rollback()
-		response.ResponseError(c, 20009, err)
-		return
-	}
 	tx.Commit()
 
-	if params.NeedCircuit == 1 {
-		strategy.UpdateCircuitConfig(params.ServiceName, circuitConfig)
-	}
 	response.ResponseSuccess(c, "")
 }
 
@@ -651,23 +632,7 @@ func (service *ServiceController) ServiceUpdateTCP(c *gin.Context) {
 		return
 	}
 
-	circuitConfig := serviceDetail.CircuitConfig
-	circuitConfig.Timeout = params.Timeout
-	circuitConfig.MaxConcurrentRequests = params.MaxConcurrentRequests
-	circuitConfig.RequestVolumeThreshold = params.RequestVolumeThreshold
-	circuitConfig.ErrorPercentThreshold = params.ErrorPercentThreshold
-	circuitConfig.SleepWindow = params.SleepWindow
-	circuitConfig.FallBackMsg = params.FallBackMsg
-	circuitConfig.NeedCircuit = params.NeedCircuit
-	if err := circuitConfig.Save(c, tx); err != nil {
-		tx.Rollback()
-		response.ResponseError(c, 20009, err)
-		return
-	}
 	tx.Commit()
-	if circuitConfig.NeedCircuit == 1 {
-		strategy.UpdateCircuitConfig(params.ServiceName, circuitConfig)
-	}
 	response.ResponseSuccess(c, "")
 }
 
