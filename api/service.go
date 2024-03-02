@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hugokung/micro_gateway/internal/dao"
 	"github.com/hugokung/micro_gateway/internal/dto"
+	"github.com/hugokung/micro_gateway/internal/strategy"
 	"github.com/hugokung/micro_gateway/pkg/golang_common/lib"
 	"github.com/hugokung/micro_gateway/pkg/public"
 	"github.com/hugokung/micro_gateway/pkg/response"
@@ -265,7 +266,29 @@ func (s *ServiceController) ServiceAddHTTP(c *gin.Context) {
 		response.ResponseError(c, 20008, err)
 		return
 	}
+
+	circuitConfig := &dao.CircuitConfig{
+		ServiceID: serviceModel.ID,
+		Timeout: params.Timeout,
+		MaxConcurrentRequests: params.MaxConcurrentRequests,
+		RequestVolumeThreshold: params.RequestVolumeThreshold,
+		SleepWindow: params.SleepWindow,
+		ErrorPercentThreshold: params.ErrorPercentThreshold,
+		FallBackMsg: params.FallBackMsg,
+		NeedCircuit: params.NeedCircuit,
+		ServiceName: params.ServiceName,
+	}
+	if err := circuitConfig.Save(c, tx); err != nil {
+		tx.Rollback()
+		response.ResponseError(c, 20009, err)
+		return
+	}
 	tx.Commit()
+
+	if params.NeedCircuit == 1 {
+		strategy.UpdateCircuitConfig(params.ServiceName, circuitConfig)
+	}
+
 	response.ResponseSuccess(c, "")
 }
 
@@ -356,7 +379,24 @@ func (service *ServiceController) ServiceUpdateHTTP(c *gin.Context) {
 		response.ResponseError(c, 20008, err)
 		return
 	}
+
+	circuitConfig := serviceDetail.CircuitConfig
+	circuitConfig.Timeout = params.Timeout
+	circuitConfig.MaxConcurrentRequests = params.MaxConcurrentRequests
+	circuitConfig.RequestVolumeThreshold = params.RequestVolumeThreshold
+	circuitConfig.ErrorPercentThreshold = params.ErrorPercentThreshold
+	circuitConfig.SleepWindow = params.SleepWindow
+	circuitConfig.FallBackMsg = params.FallBackMsg
+	circuitConfig.NeedCircuit = params.NeedCircuit
+	if err := circuitConfig.Save(c, tx); err != nil {
+		tx.Rollback()
+		response.ResponseError(c, 20009, err)
+		return
+	}
 	tx.Commit()
+	if circuitConfig.NeedCircuit == 1 {
+		strategy.UpdateCircuitConfig(params.ServiceName, circuitConfig)
+	}
 	response.ResponseSuccess(c, "")
 }
 
@@ -490,7 +530,28 @@ func (s *ServiceController) ServiceAddTCP(c *gin.Context) {
 		response.ResponseError(c, 20008, err)
 		return
 	}
+
+	circuitConfig := &dao.CircuitConfig{
+		ServiceID: serviceModel.ID,
+		Timeout: params.Timeout,
+		MaxConcurrentRequests: params.MaxConcurrentRequests,
+		RequestVolumeThreshold: params.RequestVolumeThreshold,
+		SleepWindow: params.SleepWindow,
+		ErrorPercentThreshold: params.ErrorPercentThreshold,
+		FallBackMsg: params.FallBackMsg,
+		NeedCircuit: params.NeedCircuit,
+		ServiceName: params.ServiceName,
+	}
+	if err := circuitConfig.Save(c, tx); err != nil {
+		tx.Rollback()
+		response.ResponseError(c, 20009, err)
+		return
+	}
 	tx.Commit()
+
+	if params.NeedCircuit == 1 {
+		strategy.UpdateCircuitConfig(params.ServiceName, circuitConfig)
+	}
 	response.ResponseSuccess(c, "")
 }
 
@@ -589,7 +650,24 @@ func (service *ServiceController) ServiceUpdateTCP(c *gin.Context) {
 		response.ResponseError(c, 20008, err)
 		return
 	}
+
+	circuitConfig := serviceDetail.CircuitConfig
+	circuitConfig.Timeout = params.Timeout
+	circuitConfig.MaxConcurrentRequests = params.MaxConcurrentRequests
+	circuitConfig.RequestVolumeThreshold = params.RequestVolumeThreshold
+	circuitConfig.ErrorPercentThreshold = params.ErrorPercentThreshold
+	circuitConfig.SleepWindow = params.SleepWindow
+	circuitConfig.FallBackMsg = params.FallBackMsg
+	circuitConfig.NeedCircuit = params.NeedCircuit
+	if err := circuitConfig.Save(c, tx); err != nil {
+		tx.Rollback()
+		response.ResponseError(c, 20009, err)
+		return
+	}
 	tx.Commit()
+	if circuitConfig.NeedCircuit == 1 {
+		strategy.UpdateCircuitConfig(params.ServiceName, circuitConfig)
+	}
 	response.ResponseSuccess(c, "")
 }
 
@@ -686,7 +764,28 @@ func (s *ServiceController) ServiceAddGRPC(c *gin.Context) {
 		response.ResponseError(c, 20008, err)
 		return
 	}
+
+	circuitConfig := &dao.CircuitConfig{
+		ServiceID: serviceModel.ID,
+		Timeout: params.Timeout,
+		MaxConcurrentRequests: params.MaxConcurrentRequests,
+		RequestVolumeThreshold: params.RequestVolumeThreshold,
+		SleepWindow: params.SleepWindow,
+		ErrorPercentThreshold: params.ErrorPercentThreshold,
+		FallBackMsg: params.FallBackMsg,
+		NeedCircuit: params.NeedCircuit,
+		ServiceName: params.ServiceName,
+	}
+	if err := circuitConfig.Save(c, tx); err != nil {
+		tx.Rollback()
+		response.ResponseError(c, 20009, err)
+		return
+	}
 	tx.Commit()
+
+	if params.NeedCircuit == 1 {
+		strategy.UpdateCircuitConfig(params.ServiceName, circuitConfig)
+	}
 	response.ResponseSuccess(c, "")
 }
 
@@ -786,7 +885,24 @@ func (service *ServiceController) ServiceUpdateGRPC(c *gin.Context) {
 		response.ResponseError(c, 20008, err)
 		return
 	}
+	
+	circuitConfig := serviceDetail.CircuitConfig
+	circuitConfig.Timeout = params.Timeout
+	circuitConfig.MaxConcurrentRequests = params.MaxConcurrentRequests
+	circuitConfig.RequestVolumeThreshold = params.RequestVolumeThreshold
+	circuitConfig.ErrorPercentThreshold = params.ErrorPercentThreshold
+	circuitConfig.SleepWindow = params.SleepWindow
+	circuitConfig.FallBackMsg = params.FallBackMsg
+	circuitConfig.NeedCircuit = params.NeedCircuit
+	if err := circuitConfig.Save(c, tx); err != nil {
+		tx.Rollback()
+		response.ResponseError(c, 20009, err)
+		return
+	}
 	tx.Commit()
+	if circuitConfig.NeedCircuit == 1 {
+		strategy.UpdateCircuitConfig(params.ServiceName, circuitConfig)
+	}
 	response.ResponseSuccess(c, "")
 }
 

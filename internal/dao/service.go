@@ -15,11 +15,12 @@ import (
 
 type ServiceDetail struct {
 	Info          *ServiceInfo   `json:"info" description:"基本信息"`
-	HTTPRule      *HttpRule      `json:"http_rule" description:"http_rule"`
-	TCPRule       *TcpRule       `json:"tcp_rule" description:"tcp_rule"`
-	GRPCRule      *GrpcRule      `json:"grpc_rule" description:"grpc_rule"`
-	LoadBalance   *LoadBalance   `json:"load_balance" description:"load_balance"`
-	AccessControl *AccessControl `json:"access_control" description:"access_control"`
+	HTTPRule      *HttpRule      `json:"http_rule" description:"http代理规则"`
+	TCPRule       *TcpRule       `json:"tcp_rule" description:"tcp代理规则"`
+	GRPCRule      *GrpcRule      `json:"grpc_rule" description:"grpc代理规则"`
+	LoadBalance   *LoadBalance   `json:"load_balance" description:"负载均衡"`
+	AccessControl *AccessControl `json:"access_control" description:"权限校验"`
+	CircuitConfig *CircuitConfig  `json:"circuit_config" description:"熔断配置"`
 }
 
 var ServiceManagerHandler *ServiceManager
@@ -151,7 +152,7 @@ func (s *ServiceManager) LoadAndWatch() error {
 	s.Notify(e)
 	go func() {
 		// db定时检查update_time是否变更过
-		for true {
+		for {
 			time.Sleep(10 * time.Second)
 			ns := s.LoadService()
 			if ns.err != nil {
