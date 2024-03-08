@@ -160,27 +160,28 @@ CREATE TABLE `gateway_service_http_rule` (
   `need_strip_uri` tinyint(4) NOT NULL DEFAULT '0' COMMENT '启用strip_uri 1=启用',
   `need_websocket` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否支持websocket 1=支持',
   `url_rewrite` varchar(5000) NOT NULL DEFAULT '' COMMENT 'url重写功能 格式：^/gatekeeper/test_service(.*) $1 多个逗号间隔',
-  `header_transfor` varchar(5000) NOT NULL DEFAULT '' COMMENT 'header转换支持增加(add)、删除(del)、修改(edit) 格式: add headname headvalue 多个逗号间隔'
+  `header_transfor` varchar(5000) NOT NULL DEFAULT '' COMMENT 'header转换支持增加(add)、删除(del)、修改(edit) 格式: add headname headvalue 多个逗号间隔',
+  `retries` tinyint(4) NOT NULL DEFAULT '0' COMMIT '重试次数'  
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='网关路由匹配表';
 
 --
 -- 转存表中的数据 `gateway_service_http_rule`
 --
 
-INSERT INTO `gateway_service_http_rule` (`id`, `service_id`, `rule_type`, `rule`, `need_https`, `need_strip_uri`, `need_websocket`, `url_rewrite`, `header_transfor`) VALUES
-(165, 35, 1, '', 0, 0, 0, '', ''),
-(168, 34, 0, '', 0, 0, 0, '', ''),
-(170, 36, 0, '', 0, 0, 0, '', ''),
-(171, 38, 0, '/abc', 1, 0, 1, '^/abc $1', 'add head1 value1'),
-(172, 43, 0, '/usr', 1, 1, 0, '^/afsaasf $1,^/afsaasf $1', ''),
-(173, 44, 1, 'www.test.com', 1, 1, 1, '', ''),
-(174, 47, 1, 'www.test.com', 1, 1, 1, '', ''),
-(175, 48, 1, 'www.test.com', 1, 1, 1, '', ''),
-(176, 49, 1, 'www.test.com', 1, 1, 1, '', ''),
-(177, 56, 0, '/test_http_service', 1, 1, 1, '^/test_http_service/abb/(.*) /test_http_service/bba/$1', 'add header_name header_value'),
-(178, 59, 1, 'test.com', 0, 1, 1, '', 'add headername headervalue'),
-(179, 60, 0, '/test_strip_uri', 0, 1, 0, '^/aaa/(.*) /bbb/$1', ''),
-(180, 61, 0, '/test_https_server', 1, 1, 0, '', '');
+INSERT INTO `gateway_service_http_rule` (`id`, `service_id`, `rule_type`, `rule`, `need_https`, `need_strip_uri`, `need_websocket`, `url_rewrite`, `header_transfor`, `retries`) VALUES
+(165, 35, 1, '', 0, 0, 0, '', '', 0),
+(168, 34, 0, '', 0, 0, 0, '', '', 0),
+(170, 36, 0, '', 0, 0, 0, '', '', 0),
+(171, 38, 0, '/abc', 1, 0, 1, '^/abc $1', 'add head1 value1', 0),
+(172, 43, 0, '/usr', 1, 1, 0, '^/afsaasf $1,^/afsaasf $1', '', 0),
+(173, 44, 1, 'www.test.com', 1, 1, 1, '', '', 0),
+(174, 47, 1, 'www.test.com', 1, 1, 1, '', '', 0),
+(175, 48, 1, 'www.test.com', 1, 1, 1, '', '', 0),
+(176, 49, 1, 'www.test.com', 1, 1, 1, '', '', 0),
+(177, 56, 0, '/test_http_service', 1, 1, 1, '^/test_http_service/abb/(.*) /test_http_service/bba/$1', 'add header_name header_value', 0),
+(178, 59, 1, 'test.com', 0, 1, 1, '', 'add headername headervalue', 0),
+(179, 60, 0, '/test_strip_uri', 0, 1, 0, '^/aaa/(.*) /bbb/$1', '', 0),
+(180, 61, 0, '/test_https_server', 1, 1, 0, '', '', 0);
 
 -- --------------------------------------------------------
 
@@ -283,6 +284,20 @@ INSERT INTO `gateway_service_load_balance` (`id`, `service_id`, `check_method`, 
 (189, 61, 0, 2, 5, 2, '127.0.0.1:3003,127.0.0.1:3004', '50,50', '', 0, 0, 0, 0);
 
 -- --------------------------------------------------------
+-- 表的结构`gateway_service_circuit_config`
+CREATE TABLE `gateway_service_circuit_config` (
+  `id` bigint(20) NOT NULL COMMENT '自增主键',
+  `service_id` bigint(20) NOT NULL DEFAULT '0' COMMENT '服务id',
+  `service_name` varchar(2000) NOT NULL DEFAULT '' COMMENT '服务名称',
+  `timeout` int(10) NOT NULL DEFAULT '0' COMMENT '请求超时时间,单位s',
+  `max_concurrent_requests` int(11) NOT NULL DEFAULT '0' COMMENT '最大并发请求数',
+  `request_volume_threshold` tinyint(4) NOT NULL DEFAULT '0' COMMENT '请求间隔',
+  `sleep_window` int(11) NOT NULL DEFAULT '0' COMMENT '暂停时间',
+  `error_percent_threshold` int(11) NOT NULL DEFAULT '1' COMMENT '触发熔断的错误百分比',
+  `fall_back_msg` varchar(2000) NOT NULL DEFAULT '' COMMENT '降级返回信息',
+  `need_circuit` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否开启熔断策略，0：不开启，1:开启'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='熔断策略表';
+
 
 --
 -- 表的结构 `gateway_service_tcp_rule`
@@ -363,6 +378,10 @@ ALTER TABLE `gateway_service_load_balance`
 ALTER TABLE `gateway_service_tcp_rule`
   ADD PRIMARY KEY (`id`);
 
+ALTER TABLE `gateway_service_circuit_config`
+  ADD PRIMARY KEY (`id`);
+
+
 --
 -- 在导出的表使用AUTO_INCREMENT
 --
@@ -407,6 +426,10 @@ ALTER TABLE `gateway_service_load_balance`
 --
 ALTER TABLE `gateway_service_tcp_rule`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增主键', AUTO_INCREMENT=182;COMMIT;
+
+ALTER TABLE `gateway_service_circuit_config`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增主键', AUTO_INCREMENT=182;COMMIT;
+
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

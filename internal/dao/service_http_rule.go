@@ -15,6 +15,7 @@ type HttpRule struct {
 	NeedStripUri   int    `json:"need_strip_uri" gorm:"column:need_strip_uri" description:"启用strip_uri 1=启用"`
 	UrlRewrite     string `json:"url_rewrite" gorm:"column:url_rewrite" description:"url重写功能，每行一个	"`
 	HeaderTransfor string `json:"header_transfor" gorm:"column:header_transfor" description:"header转换支持增加(add)、删除(del)、修改(edit) 格式: add headname headvalue	"`
+	Retries        int    `json:"retries" gorm:"column:retries" description:"重试次数"`
 }
 
 func (t *HttpRule) TableName() string {
@@ -50,3 +51,4 @@ func (t *HttpRule) ListByServiceID(c *gin.Context, tx *gorm.DB, serviceID int64)
 	}
 	return list, count, nil
 }
+
