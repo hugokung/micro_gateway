@@ -2,16 +2,16 @@ package dao
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/hugokung/micro_gateway/pkg/load_balance"
+	"github.com/hugokung/micro_gateway/pkg/public"
+	"gorm.io/gorm"
 	"log"
 	"net"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
-	"github.com/hugokung/micro_gateway/pkg/public"
-	"github.com/gin-gonic/gin"
-	"github.com/hugokung/micro_gateway/pkg/load_balance"
-	"gorm.io/gorm"
 )
 
 type LoadBalance struct {
@@ -169,9 +169,37 @@ type Transportor struct {
 	Locker         sync.Locker
 }
 type TransportItem struct {
-	Trans       *http.Transport
+	Trans       *RetryTransport
 	ServiceName string
 	UpdateAt    time.Time
+}
+
+type RetryTransport struct {
+	Transport http.RoundTripper
+	Retries   int
+}
+
+func (r *RetryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	var resp *http.Response
+	var err error
+
+	for i := 0; i <= r.Retries; i++ {
+		resp, err = r.Transport.RoundTrip(req)
+
+		if err == nil && resp.StatusCode < 500 {
+			break
+		}
+		// TODO: 如何设计更合理的重试间隔
+		time.Sleep(1 * time.Second)
+	}
+	return resp, err
+}
+
+func newRetryTransport(baseTransport http.RoundTripper, retries int) *RetryTransport {
+	return &RetryTransport{
+		Transport: baseTransport,
+		Retries:   retries,
+	}
 }
 
 var TransportorHandler *Transportor
@@ -209,7 +237,7 @@ func (t *Transportor) Update(e *ServiceEvent) {
 	t.TransportSlice = newSlice
 }
 
-func (t *Transportor) GetTransportor(service *ServiceDetail) (*http.Transport, error) {
+func (t *Transportor) GetTransportor(service *ServiceDetail) (*RetryTransport, error) {
 	for _, transItem := range t.TransportSlice {
 		if transItem.ServiceName == service.Info.ServiceName {
 			return transItem.Trans, nil
@@ -250,16 +278,17 @@ func (t *Transportor) GetTransportor(service *ServiceDetail) (*http.Transport, e
 
 	//save to map and slice
 	matched := false
+	retryTrans := newRetryTransport(trans, service.HTTPRule.Retries)
 	for _, transItem := range t.TransportSlice {
 		if transItem.ServiceName == service.Info.ServiceName {
 			matched = true
-			transItem.Trans = trans
+			transItem.Trans = retryTrans
 			transItem.UpdateAt = service.Info.UpdatedAt
 		}
 	}
 	if !matched {
 		transItem := &TransportItem{
-			Trans:       trans,
+			Trans:       retryTrans,
 			ServiceName: service.Info.ServiceName,
 			UpdateAt:    service.Info.UpdatedAt,
 		}
@@ -268,5 +297,5 @@ func (t *Transportor) GetTransportor(service *ServiceDetail) (*http.Transport, e
 		defer t.Locker.Unlock()
 		t.TransportMap[service.Info.ServiceName] = transItem
 	}
-	return trans, nil
+	return retryTrans, nil
 }
