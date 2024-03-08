@@ -11,6 +11,7 @@ import (
 	"github.com/hugokung/micro_gateway/internal/dao"
 	"github.com/hugokung/micro_gateway/internal/server"
 	"github.com/hugokung/micro_gateway/internal/service"
+	"github.com/hugokung/micro_gateway/internal/strategy"
 	"github.com/hugokung/micro_gateway/pkg/golang_common/lib"
 	"github.com/sourcegraph/conc"
 )
@@ -53,6 +54,7 @@ func main() {
 		dao.ServiceManagerHandler.LoadAndWatch()
 		//加载租户信息到内存
 		dao.AppManagerHandler.LoadAndWatch()
+		strategy.InitCircuitConfig()
 		go func() {
 			server.HttpProxyServerRun()
 		}()

@@ -34,6 +34,7 @@ require (
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
+	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/alimy/tryst v0.8.3 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff // indirect

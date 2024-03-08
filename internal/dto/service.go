@@ -56,6 +56,7 @@ type ServiceAddTCPInput struct {
 	IpList            string `json:"ip_list" form:"ip_list" comment:"IP列表" validate:"required,valid_ipportlist"`
 	WeightList        string `json:"weight_list" form:"weight_list" comment:"权重列表" validate:"required,valid_weightlist"`
 	ForbidList        string `json:"forbid_list" form:"forbid_list" comment:"禁用IP列表" validate:"valid_iplist"`
+
 }
 
 func (param *ServiceAddTCPInput) BindValidParam(c *gin.Context) error {
@@ -77,6 +78,7 @@ type ServiceUpdateTCPInput struct {
 	IpList            string `json:"ip_list" form:"ip_list" comment:"IP列表" validate:"required,valid_ipportlist"`
 	WeightList        string `json:"weight_list" form:"weight_list" comment:"权重列表" validate:"required,valid_weightlist"`
 	ForbidList        string `json:"forbid_list" form:"forbid_list" comment:"禁用IP列表" validate:"valid_iplist"`
+
 }
 
 func (param *ServiceUpdateTCPInput) BindValidParam(c *gin.Context) error {
@@ -99,6 +101,14 @@ type ServiceAddGRPCInput struct {
 	IpList            string `json:"ip_list" form:"ip_list" comment:"IP列表" validate:"required,valid_ipportlist"`
 	WeightList        string `json:"weight_list" form:"weight_list" comment:"权重列表" validate:"required,valid_weightlist"`
 	ForbidList        string `json:"forbid_list" form:"forbid_list" comment:"禁用IP列表" validate:"valid_iplist"`
+
+	Timeout                	int 	`json:"timeout" form:"timeout"`
+	MaxConcurrentRequests  	int 	`json:"max_concurrent_requests" form:"max_concurrent_requests"`
+	RequestVolumeThreshold 	int 	`json:"request_volume_threshold" form:"request_volume_threshold"`
+	SleepWindow            	int 	`json:"sleep_window" form:"sleep_window"`
+	ErrorPercentThreshold  	int 	`json:"error_percent_threshold" form:"error_percent_threshold"`
+	FallBackMsg				string	`json:"fall_back_msg" form:"fall_back_msg"`
+	NeedCircuit				int		`json:"need_circuit" form:"need_circuit"`
 }
 
 func (s *ServiceAddGRPCInput) BindValidParam(c *gin.Context) error {
@@ -121,6 +131,14 @@ type ServiceUpdateGRPCInput struct {
 	IpList            string `json:"ip_list" form:"ip_list" comment:"IP列表" validate:"required,valid_ipportlist"`
 	WeightList        string `json:"weight_list" form:"weight_list" comment:"权重列表" validate:"required,valid_weightlist"`
 	ForbidList        string `json:"forbid_list" form:"forbid_list" comment:"禁用IP列表" validate:"valid_iplist"`
+
+	Timeout                	int 	`json:"timeout" form:"timeout"`
+	MaxConcurrentRequests  	int 	`json:"max_concurrent_requests" form:"max_concurrent_requests"`
+	RequestVolumeThreshold 	int 	`json:"request_volume_threshold" form:"request_volume_threshold"`
+	SleepWindow            	int 	`json:"sleep_window" form:"sleep_window"`
+	ErrorPercentThreshold  	int 	`json:"error_percent_threshold" form:"error_percent_threshold"`
+	FallBackMsg				string	`json:"fall_back_msg" form:"fall_back_msg"`
+	NeedCircuit				int		`json:"need_circuit" form:"need_circuit"`
 }
 
 func (s *ServiceUpdateGRPCInput) BindValidParam(c *gin.Context) error {
@@ -157,6 +175,14 @@ type ServiceUpdateHTTPInput struct {
 	UpstreamHeaderTimeout  int    `json:"upstream_header_timeout" form:"upstream_header_timeout" comment:"获取header超时, 单位s" example:"" validate:"min=0"` //获取header超时, 单位s
 	UpstreamIdleTimeout    int    `json:"upstream_idle_timeout" form:"upstream_idle_timeout" comment:"链接最大空闲时间, 单位s" example:"" validate:"min=0"`       //链接最大空闲时间, 单位s
 	UpstreamMaxIdle        int    `json:"upstream_max_idle" form:"upstream_max_idle" comment:"最大空闲链接数" example:"" validate:"min=0"`                     //最大空闲链接数
+
+	Timeout                	int 	`json:"timeout" form:"timeout"`
+	MaxConcurrentRequests  	int 	`json:"max_concurrent_requests" form:"max_concurrent_requests"`
+	RequestVolumeThreshold 	int 	`json:"request_volume_threshold" form:"request_volume_threshold"`
+	SleepWindow            	int 	`json:"sleep_window" form:"sleep_window"`
+	ErrorPercentThreshold  	int 	`json:"error_percent_threshold" form:"error_percent_threshold"`
+	FallBackMsg				string	`json:"fall_back_msg" form:"fall_back_msg"`
+	NeedCircuit				int		`json:"need_circuit" form:"need_circuit"`
 }
 
 func (param *ServiceAddHTTPInput) BindValidParam(c *gin.Context) error {
@@ -188,6 +214,14 @@ type ServiceAddHTTPInput struct {
 	UpstreamHeaderTimeout  int    `json:"upstream_header_timeout" form:"upstream_header_timeout" comment:"获取header超时, 单位s" example:"" validate:"min=0"` //获取header超时, 单位s
 	UpstreamIdleTimeout    int    `json:"upstream_idle_timeout" form:"upstream_idle_timeout" comment:"链接最大空闲时间, 单位s" example:"" validate:"min=0"`       //链接最大空闲时间, 单位s
 	UpstreamMaxIdle        int    `json:"upstream_max_idle" form:"upstream_max_idle" comment:"最大空闲链接数" example:"" validate:"min=0"`                     //最大空闲链接数
+
+	Timeout                	int 	`json:"timeout" form:"timeout"`
+	MaxConcurrentRequests  	int 	`json:"max_concurrent_requests" form:"max_concurrent_requests"`
+	RequestVolumeThreshold 	int 	`json:"request_volume_threshold" form:"request_volume_threshold"`
+	SleepWindow            	int 	`json:"sleep_window" form:"sleep_window"`
+	ErrorPercentThreshold  	int 	`json:"error_percent_threshold" form:"error_percent_threshold"`
+	FallBackMsg				string	`json:"fall_back_msg" form:"fall_back_msg"`
+	NeedCircuit				int		`json:"need_circuit" form:"need_circuit"`
 }
 
 type ServiceStatOutput struct {
