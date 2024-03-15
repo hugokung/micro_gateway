@@ -9,13 +9,14 @@ import (
 )
 
 type ServiceInfo struct {
-	ID				int64			`json:"id" gorm:"primary_key" description:"自增主键"`
-	LoadType		int				`json:"load_type" gorm:"column:load_type" description:"负载类型"`	
-	ServiceName		string			`json:"service_name" gorm:"column:service_name" description:"服务名称"`
-	ServiceDesc		string			`json:"service_desc" gorm:"column:service_desc" description:"服务描述"`
-	UpdatedAt 		time.Time 		`json:"update_at" gorm:"column:update_at" description:"更新时间"`
-	CreatedAt 		time.Time 		`json:"create_at" gorm:"column:create_at" description:"创建时间"`
-	IsDelete  		int				`json:"is_delete" gorm:"column:is_delete" description:"是否删除"`
+	ID               int64     `json:"id" gorm:"primary_key" description:"自增主键"`
+	LoadType         int       `json:"load_type" gorm:"column:load_type" description:"负载类型"`
+	ServiceName      string    `json:"service_name" gorm:"column:service_name" description:"服务名称"`
+	ServiceDesc      string    `json:"service_desc" gorm:"column:service_desc" description:"服务描述"`
+	ServiceDiscovery int       `json:"service_desc" gorm:"column:service_discovery" description:"服务发现类型"`
+	UpdatedAt        time.Time `json:"update_at" gorm:"column:update_at" description:"更新时间"`
+	CreatedAt        time.Time `json:"create_at" gorm:"column:create_at" description:"创建时间"`
+	IsDelete         int       `json:"is_delete" gorm:"column:is_delete" description:"是否删除"`
 }
 
 func (t *ServiceInfo) TableName() string {
@@ -29,7 +30,7 @@ func (s *ServiceInfo) PageList(c *gin.Context, tx *gorm.DB, param *dto.ServiceIn
 	query = query.Limit(param.PageSize).Offset(offset)
 	query = query.Table(s.TableName()).Where("is_delete = ?", 0)
 	if param.Info != "" {
-		query = query.Where("(service_name like ? or service_desc like ?)", "%" + param.Info + "%", "%" + param.Info + "%")
+		query = query.Where("(service_name like ? or service_desc like ?)", "%"+param.Info+"%", "%"+param.Info+"%")
 	}
 	err := query.Find(&list).Error
 	if err != nil && err != gorm.ErrRecordNotFound {

@@ -20,7 +20,8 @@ type ServiceDetail struct {
 	GRPCRule      *GrpcRule      `json:"grpc_rule" description:"grpc代理规则"`
 	LoadBalance   *LoadBalance   `json:"load_balance" description:"负载均衡"`
 	AccessControl *AccessControl `json:"access_control" description:"权限校验"`
-	CircuitConfig *CircuitConfig  `json:"circuit_config" description:"熔断配置"`
+	CircuitConfig *CircuitConfig `json:"circuit_config" description:"熔断配置"`
+	Environment   *Environment   `json:"environment" description:"服务发现"`
 }
 
 var ServiceManagerHandler *ServiceManager
