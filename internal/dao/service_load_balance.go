@@ -2,16 +2,16 @@ package dao
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/hugokung/micro_gateway/pkg/load_balance"
+	"github.com/hugokung/micro_gateway/pkg/public"
+	"gorm.io/gorm"
 	"log"
 	"net"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
-	"github.com/hugokung/micro_gateway/pkg/public"
-	"github.com/gin-gonic/gin"
-	"github.com/hugokung/micro_gateway/pkg/load_balance"
-	"gorm.io/gorm"
 )
 
 type LoadBalance struct {
@@ -56,6 +56,12 @@ func (t *LoadBalance) GetWeightListByModel() []string {
 	return strings.Split(t.WeightList, ",")
 }
 
+type ZkLoadBalancer struct {
+	ZkLoadBalancerMap   map[string]*LoadBalancerItem
+	ZkloadBalancerSlice []*LoadBalancerItem
+	Locker              sync.RWMutex
+}
+
 type LoadBalancer struct {
 	LoadBalanceMap   map[string]*LoadBalancerItem
 	LoadBalanceSlice []*LoadBalancerItem
@@ -68,6 +74,7 @@ type LoadBalancerItem struct {
 }
 
 var LoadBalancerHandler *LoadBalancer
+var ZkLoadBalancerHandler *ZkLoadBalancer
 
 func NewLoadBalancer() *LoadBalancer {
 	return &LoadBalancer{
@@ -77,7 +84,17 @@ func NewLoadBalancer() *LoadBalancer {
 	}
 }
 
+func NewZkLoadBalancer() *ZkLoadBalancer {
+	return &ZkLoadBalancer{
+		ZkLoadBalancerMap:   make(map[string]*LoadBalancerItem),
+		ZkloadBalancerSlice: []*LoadBalancerItem{},
+		Locker:              sync.RWMutex{},
+	}
+}
+
 func init() {
+	ZkLoadBalancerHandler = NewZkLoadBalancer()
+	ServiceManagerHandler.Register(ZkLoadBalancerHandler)
 	LoadBalancerHandler = NewLoadBalancer()
 	ServiceManagerHandler.Register(LoadBalancerHandler)
 	TransportorHandler = NewTransportor()
@@ -108,6 +125,32 @@ func (lbr *LoadBalancer) Update(e *ServiceEvent) {
 		}
 	}
 	lbr.LoadBalanceSlice = newLBSlice
+}
+
+func (lbr *ZkLoadBalancer) Update(e *ServiceEvent) {
+	log.Printf("ZkLoadBalancer.Update\n")
+	for _, service := range e.AddService {
+		lbr.GetLoadBalancer(service)
+	}
+	for _, service := range e.UpdateService {
+		lbr.GetLoadBalancer(service)
+	}
+	var newLBSlice []*LoadBalancerItem
+	for _, lbrItem := range lbr.ZkloadBalancerSlice {
+		matched := false
+		for _, service := range e.DeleteService {
+			if lbrItem.ServiceName == service.Info.ServiceName {
+				lbrItem.LoadBalance.Close()
+				matched = true
+			}
+		}
+		if matched {
+			delete(lbr.ZkLoadBalancerMap, lbrItem.ServiceName)
+		} else {
+			newLBSlice = append(newLBSlice, lbrItem)
+		}
+	}
+	lbr.ZkloadBalancerSlice = newLBSlice
 }
 
 func (lbr *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.LoadBalance, error) {
@@ -159,6 +202,53 @@ func (lbr *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.L
 		lbr.Locker.Lock()
 		defer lbr.Locker.Unlock()
 		lbr.LoadBalanceMap[service.Info.ServiceName] = lbItem
+	}
+	return lb, nil
+}
+
+func (lbr *ZkLoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.LoadBalance, error) {
+	for _, lbrItem := range lbr.ZkloadBalancerSlice {
+		if lbrItem.ServiceName == service.Info.ServiceName && lbrItem.UpdatedAt == service.Info.UpdatedAt {
+			return lbrItem.LoadBalance, nil
+		}
+	}
+
+	schema := "http://"
+	if service.HTTPRule.NeedHttps == 1 {
+		schema = "https://"
+	}
+	if service.Info.LoadType == public.LoadTypeTCP || service.Info.LoadType == public.LoadTypeGRPC {
+		schema = ""
+	}
+
+	ipConf := map[string]string{}
+	zkHost := service.Environment.GetIPListByModel()
+	mConf, err := load_balance.NewLoadBalanceZkConf(fmt.Sprintf("%s%s", schema, "%s"), service.Info.ServiceName, zkHost, ipConf)
+	if err != nil {
+		return nil, err
+	}
+	lb := load_balance.LoadBanlanceFactorWithConf(load_balance.LbType(service.LoadBalance.RoundType), mConf)
+
+	//save to map and slice
+	matched := false
+	for _, lbrItem := range lbr.ZkloadBalancerSlice {
+		if lbrItem.ServiceName == service.Info.ServiceName {
+			matched = true
+			lbrItem.LoadBalance.Close()
+			lbrItem.LoadBalance = lb
+			lbrItem.UpdatedAt = service.Info.UpdatedAt
+		}
+	}
+	if !matched {
+		lbItem := &LoadBalancerItem{
+			LoadBalance: lb,
+			ServiceName: service.Info.ServiceName,
+			UpdatedAt:   service.Info.UpdatedAt,
+		}
+		lbr.ZkloadBalancerSlice = append(lbr.ZkloadBalancerSlice, lbItem)
+		lbr.Locker.Lock()
+		defer lbr.Locker.Unlock()
+		lbr.ZkLoadBalancerMap[service.Info.ServiceName] = lbItem
 	}
 	return lb, nil
 }
