@@ -1,8 +1,15 @@
-FROM golang
+FROM node:lts-alpine3.10 AS frontend
+RUN apk update && apk upgrade && apk add git
+WORKDIR /web
+COPY web/ ./
+RUN git config --global url."https://".insteadOf git://
+RUN npm install
+RUN npm run build:prod
 
+FROM golang 
 WORKDIR /go/src/app
 COPY . .
+COPY --from=frontend /web/dist ./dist
 RUN export GO111MODULE=auto && export GOPROXY=https://goproxy.cn && go mod tidy
 RUN go build -o ./bin/go_gateway
-
 CMD ./bin/go_gateway -conf=./conf/prod/ -endpoint=dashboard

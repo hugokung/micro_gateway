@@ -4,5 +4,5 @@ WORKDIR /go/src/app1
 COPY . .
 RUN export GO111MODULE=auto && export GOPROXY=https://goproxy.cn && go mod tidy
 RUN go build -o ./bin/go_gateway
-
+RUN openssl genrsa -out ca.key 2048 && openssl req -x509 -new -nodes -key ca.key -subj "/CN=example1.com" -days 5000 -out ca.crt && openssl genrsa -out server.key 2048 && openssl req -new -key server.key -subj "/CN=example1.com" -out server.csr && openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 5000 && cp server.crt ./pkg/cert_file/ && cp server.csr ./pkg/cert_file/
 CMD ./bin/go_gateway -conf=./conf/prod/ -endpoint=server

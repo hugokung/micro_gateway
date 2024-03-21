@@ -1,0 +1,4 @@
+FROM mysql:latest
+ENV MYSQL_ROOT_PASSWORD=xx@xxx
+ENV MYSQL_DATABASE=mirco_gateway
+COPY ./scripts/gateway.sql /docker-entrypoint-initdb.d/

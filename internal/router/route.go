@@ -2,6 +2,7 @@ package router
 
 import (
 	"log"
+	"math/rand"
 
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -77,7 +78,9 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	adminLoginRouter := router.Group("/admin_login")
-	store, err := sessions.NewRedisStore(10, "tcp", "localhost:6379", "", []byte("secret"))
+	redisConf := lib.ConfRedisMap.List["default"]
+	redisHost := redisConf.ProxyList[0] //use first address
+	store, err := sessions.NewRedisStore(10, "tcp", redisHost, "", []byte("secret"))
 	if err != nil {
 		log.Fatalf("session.NewRedisStore err: %v", err)
 	}
