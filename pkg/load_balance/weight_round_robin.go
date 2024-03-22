@@ -87,6 +87,13 @@ func (r *WeightRoundRobinBalance) Update() {
 			r.Add(strings.Split(ip, ",")...)
 		}
 	}
+	if conf, ok := r.conf.(*LoadBalanceEtcdConf); ok {
+		fmt.Println("Update get etcd conf:", conf.GetConf())
+		r.rss = nil
+		for _, ip := range conf.GetConf() {
+			r.Add(strings.Split(ip, ",")...)
+		}
+	}
 }
 
 func (r *WeightRoundRobinBalance) Close() {
