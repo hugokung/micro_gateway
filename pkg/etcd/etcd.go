@@ -17,7 +17,7 @@ type EtcdManger struct {
 func NewEtcdManager(hosts []string, DialTimeout int) (*EtcdManger, error) {
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   hosts,
-		DialTimeout: time.Duration(DialTimeout),
+		DialTimeout: time.Duration(DialTimeout * int(time.Second)),
 	})
 
 	if err != nil {
@@ -45,7 +45,7 @@ func (e *EtcdManger) GetServerListByPrefix(prefix string) ([]string, error) {
 	return list, nil
 }
 
-func (e *EtcdManger) WathServerListByPrefix(prefix string) (chan []string, chan error) {
+func (e *EtcdManger) WatchServerListByPrefix(prefix string) (chan []string, chan error) {
 	snapshots := make(chan []string)
 	errCh := make(chan error)
 	go func() {

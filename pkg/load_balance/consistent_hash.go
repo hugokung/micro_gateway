@@ -114,6 +114,13 @@ func (c *ConsistentHashBanlance) Update() {
 			c.Add(strings.Split(ip, ",")...)
 		}
 	}
+	if conf, ok := c.conf.(*LoadBalanceEtcdConf); ok {
+		fmt.Println("Update get etcd conf:", conf.GetConf())
+		c.keys = nil
+		for _, ip := range conf.GetConf() {
+			c.Add(strings.Split(ip, ",")...)
+		}
+	}
 }
 
 func (c *ConsistentHashBanlance) Close() {
