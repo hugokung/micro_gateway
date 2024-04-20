@@ -85,6 +85,7 @@ func NewLoadBalanceEtcdConf(format, path string, etcdHosts []string, conf map[st
 	}
 	defer etcdManager.Close()
 	elist, err := etcdManager.GetServerListByPrefix(path)
+	log.Printf("path: %v, elist: %v\n", path, elist)
 	if err != nil {
 		return nil, err
 	}
@@ -144,9 +145,11 @@ func (s *LoadBalanceEtcdConf) WatchConf() {
 		for {
 			select {
 			case changeErr := <-chanErr:
-				fmt.Println("changeErr", changeErr)
+				log.Printf("changeErr: %v\n", changeErr)
+				//fmt.Println("changeErr", changeErr)
 			case changedList := <-chanList:
-				fmt.Println("watch node changed")
+				log.Println("watch node changed")
+				//fmt.Println("watch node changed")
 				s.UpdateConf(changedList)
 			}
 		}
@@ -188,7 +191,8 @@ type LoadBalanceObserver struct {
 }
 
 func (l *LoadBalanceObserver) Update() {
-	fmt.Println("Update get conf:", l.ModuleConf.GetConf())
+	log.Printf("Update get conf: %v", l.ModuleConf.GetConf())
+	//fmt.Println("Update get conf:", l.ModuleConf.GetConf())
 }
 
 func NewLoadBalanceObserver(conf *LoadBalanceZkConf) *LoadBalanceObserver {
