@@ -1,17 +1,19 @@
 package dao
 
 import (
+	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/hugokung/micro_gateway/pkg/load_balance"
-	"github.com/hugokung/micro_gateway/pkg/public"
-	"gorm.io/gorm"
 	"log"
 	"net"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/hugokung/micro_gateway/pkg/load_balance"
+	"github.com/hugokung/micro_gateway/pkg/public"
+	"gorm.io/gorm"
 )
 
 type LoadBalance struct {
@@ -153,13 +155,7 @@ func (lbr *ZkLoadBalancer) Update(e *ServiceEvent) {
 	lbr.ZkloadBalancerSlice = newLBSlice
 }
 
-func (lbr *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.LoadBalance, error) {
-	for _, lbrItem := range lbr.LoadBalanceSlice {
-		if lbrItem.ServiceName == service.Info.ServiceName && lbrItem.UpdatedAt == service.Info.UpdatedAt {
-			return lbrItem.LoadBalance, nil
-		}
-	}
-
+func GetLoadBalancerConf(service *ServiceDetail) (load_balance.LoadBalanceConf, error) {
 	schema := "http://"
 	if service.HTTPRule.NeedHttps == 1 {
 		schema = "https://"
@@ -168,15 +164,40 @@ func (lbr *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.L
 		schema = ""
 	}
 
-	ipList := service.LoadBalance.GetIPListByModel()
-	weightList := service.LoadBalance.GetWeightListByModel()
-	ipConf := map[string]string{}
-	for idx, item := range ipList {
-		ipConf[item] = weightList[idx]
+	switch service.Info.ServiceDiscovery {
+	case public.StaticConfig:
+		ipList := service.LoadBalance.GetIPListByModel()
+		weightList := service.LoadBalance.GetWeightListByModel()
+		ipConf := map[string]string{}
+		for idx, item := range ipList {
+			ipConf[item] = weightList[idx]
+		}
+		mConf, err := load_balance.NewLoadBalanceCheckConf(service.Info.ServiceName,
+			fmt.Sprintf("%s%s", schema, "%s"), ipConf)
+		if err != nil {
+			return nil, err
+		}
+		return mConf, nil
+	case public.ZookeeperConfig:
+		ipConf := map[string]string{}
+		mConf, err := load_balance.NewLoadBalanceZkConf(fmt.Sprintf("%s%s", schema, "%s"),
+			service.Info.ServiceName,
+			service.Environment.GetIPListByModel(), ipConf)
+		if err != nil {
+			return nil, err
+		}
+		return mConf, nil
 	}
+	return nil, errors.New("Discovery type not exist")
+}
 
-	mConf, err := load_balance.NewLoadBalanceCheckConf(service.Info.ServiceName,
-		fmt.Sprintf("%s%s", schema, "%s"), ipConf)
+func (lbr *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.LoadBalance, error) {
+	for _, lbrItem := range lbr.LoadBalanceSlice {
+		if lbrItem.ServiceName == service.Info.ServiceName && lbrItem.UpdatedAt == service.Info.UpdatedAt {
+			return lbrItem.LoadBalance, nil
+		}
+	}
+	mConf, err := GetLoadBalancerConf(service)
 	if err != nil {
 		return nil, err
 	}

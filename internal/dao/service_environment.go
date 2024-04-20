@@ -8,10 +8,11 @@ import (
 )
 
 type Environment struct {
-	ID       int64  `json:"id" gorm:"primary_key"`
-	EnvName  int64  `json:"env_name" gorm:"column:env_name" description:"服务发现的环境名称"`
-	IpList   string `json:"ip_list" gorm:"column:ip_list" description:"ip 地址"`
-	IsDelete int    `json:"is_delete" gorm:"column:is_delete" description:"是否被删除"`
+	ID        int64  `json:"id" gorm:"primary_key"`
+	ServiceID int64  `json:"service_id" gorm:"service_id" description:"服务ID"`
+	EnvName   int64  `json:"env_name" gorm:"column:env_name" description:"服务发现的环境名称"`
+	IpList    string `json:"ip_list" gorm:"column:ip_list" description:"ip 地址"`
+	IsDelete  int    `json:"is_delete" gorm:"column:is_delete" description:"是否被删除"`
 }
 
 func (e *Environment) TableName() string {
