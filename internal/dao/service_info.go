@@ -101,6 +101,18 @@ func (t *ServiceInfo) ServiceDetail(c *gin.Context, tx *gorm.DB, search *Service
 		return nil, err
 	}
 
+	environment := &Environment{ServiceID: search.ID}
+	environment, err = environment.Find(c, tx, environment)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+
+	circuitConfig := &CircuitConfig{ServiceID: search.ID}
+	circuitConfig, err = circuitConfig.Find(c, tx, circuitConfig)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+
 	detail := &ServiceDetail{
 		Info:          search,
 		HTTPRule:      httpRule,
@@ -108,6 +120,8 @@ func (t *ServiceInfo) ServiceDetail(c *gin.Context, tx *gorm.DB, search *Service
 		GRPCRule:      grpcRule,
 		LoadBalance:   loadBalance,
 		AccessControl: accessControl,
+		Environment:   environment,
+		CircuitConfig: circuitConfig,
 	}
 	return detail, nil
 }
