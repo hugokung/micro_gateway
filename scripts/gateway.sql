@@ -160,27 +160,28 @@ CREATE TABLE `gateway_service_http_rule` (
   `need_strip_uri` tinyint(4) NOT NULL DEFAULT '0' COMMENT '启用strip_uri 1=启用',
   `need_websocket` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否支持websocket 1=支持',
   `url_rewrite` varchar(5000) NOT NULL DEFAULT '' COMMENT 'url重写功能 格式：^/gatekeeper/test_service(.*) $1 多个逗号间隔',
-  `header_transfor` varchar(5000) NOT NULL DEFAULT '' COMMENT 'header转换支持增加(add)、删除(del)、修改(edit) 格式: add headname headvalue 多个逗号间隔'
+  `header_transfor` varchar(5000) NOT NULL DEFAULT '' COMMENT 'header转换支持增加(add)、删除(del)、修改(edit) 格式: add headname headvalue 多个逗号间隔',
+  `retries` tinyint(4) NOT NULL DEFAULT '0' COMMENT '重试次数'  
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='网关路由匹配表';
 
 --
 -- 转存表中的数据 `gateway_service_http_rule`
 --
 
-INSERT INTO `gateway_service_http_rule` (`id`, `service_id`, `rule_type`, `rule`, `need_https`, `need_strip_uri`, `need_websocket`, `url_rewrite`, `header_transfor`) VALUES
-(165, 35, 1, '', 0, 0, 0, '', ''),
-(168, 34, 0, '', 0, 0, 0, '', ''),
-(170, 36, 0, '', 0, 0, 0, '', ''),
-(171, 38, 0, '/abc', 1, 0, 1, '^/abc $1', 'add head1 value1'),
-(172, 43, 0, '/usr', 1, 1, 0, '^/afsaasf $1,^/afsaasf $1', ''),
-(173, 44, 1, 'www.test.com', 1, 1, 1, '', ''),
-(174, 47, 1, 'www.test.com', 1, 1, 1, '', ''),
-(175, 48, 1, 'www.test.com', 1, 1, 1, '', ''),
-(176, 49, 1, 'www.test.com', 1, 1, 1, '', ''),
-(177, 56, 0, '/test_http_service', 0, 1, 1, '^/test_http_service/abb/(.*) /test_http_service/bba/$1', 'add header_name header_value'),
-(178, 59, 1, 'test.com', 0, 1, 1, '', 'add headername headervalue'),
-(179, 60, 0, '/test_strip_uri', 0, 1, 0, '^/aaa/(.*) /bbb/$1', ''),
-(180, 61, 0, '/test_https_server', 1, 1, 0, '', '');
+INSERT INTO `gateway_service_http_rule` (`id`, `service_id`, `rule_type`, `rule`, `need_https`, `need_strip_uri`, `need_websocket`, `url_rewrite`, `header_transfor`, `retries`) VALUES
+(165, 35, 1, '', 0, 0, 0, '', '', 0),
+(168, 34, 0, '', 0, 0, 0, '', '', 0),
+(170, 36, 0, '', 0, 0, 0, '', '', 0),
+(171, 38, 0, '/abc', 1, 0, 1, '^/abc $1', 'add head1 value1', 0),
+(172, 43, 0, '/usr', 1, 1, 0, '^/afsaasf $1,^/afsaasf $1', '', 0),
+(173, 44, 1, 'www.test.com', 1, 1, 1, '', '', 0),
+(174, 47, 1, 'www.test.com', 1, 1, 1, '', '', 0),
+(175, 48, 1, 'www.test.com', 1, 1, 1, '', '', 0),
+(176, 49, 1, 'www.test.com', 1, 1, 1, '', '', 0),
+(177, 56, 0, '/test_http_service', 0, 1, 1, '^/test_http_service/abb/(.*) /test_http_service/bba/$1', 'add header_name header_value', 3),
+(178, 59, 1, 'test.com', 0, 1, 1, '', 'add headername headervalue', 0),
+(179, 60, 0, '/test_strip_uri', 0, 1, 0, '^/aaa/(.*) /bbb/$1', '', 0),
+(180, 61, 0, '/test_https_server', 1, 1, 0, '', '', 0);
 
 -- --------------------------------------------------------
 
@@ -223,7 +224,7 @@ INSERT INTO `gateway_service_info` (`id`, `load_type`, `service_name`, `service_
 (53, 2, 'tewrqrw111', '123313', 0, '2020-04-13 02:03:38', '2020-04-13 02:03:20', 1),
 (54, 2, 'test_grpc_service1', 'test_grpc_service1', 0, '2020-04-15 07:49:37', '2020-04-15 07:38:43', 1),
 (55, 1, 'test_tcp_service1', 'redis服务代理', 0, '2020-04-15 07:49:35', '2020-04-15 07:46:35', 1),
-(56, 0, 'test_http_service', '测试HTTP代理', 1, '2020-04-16 00:54:45', '2020-04-15 07:55:07', 0),
+(56, 0, 'test_http_service', '测试HTTP代理', 2, '2020-04-16 00:54:45', '2020-04-15 07:55:07', 0),
 (57, 1, 'test_tcp_service', '测试TCP代理', 0, '2020-04-19 14:03:09', '2020-04-15 07:58:39', 0),
 (58, 2, 'test_grpc_service', '测试GRPC服务', 0, '2020-04-21 07:20:16', '2020-04-15 07:59:46', 0),
 (59, 0, 'test.com:8080', '测试域名接入', 0, '2020-04-18 22:54:14', '2020-04-18 20:29:13', 0),
@@ -284,7 +285,6 @@ INSERT INTO `gateway_service_load_balance` (`id`, `service_id`, `check_method`, 
 (189, 61, 0, 2, 5, 2, '127.0.0.1:3003,127.0.0.1:3004', '50,50', '', 0, 0, 0, 0);
 
 -- --------------------------------------------------------
-
 --
 -- 表的结构 `gateway_service_tcp_rule`
 --
@@ -322,7 +322,7 @@ CREATE TABLE `gateway_environment` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='服务发现环境信息表';
 
 INSERT INTO `gateway_environment` (`id`, `service_id`, `env_name`, `ip_list`, `is_delete`) VALUES
-(1, 56, "ZK", "127.0.0.1:2181", 0);
+(1, 56, "etcd", "127.0.0.1:2379", 0);
 
 DROP TABLE IF EXISTS `gateway_circuit_config`;
 CREATE TABLE `gateway_circuit_config` (
