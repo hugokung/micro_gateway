@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hugokung/micro_gateway/internal/dao"
 	"github.com/hugokung/micro_gateway/internal/load_balancer"
+	"github.com/hugokung/micro_gateway/pkg/load_balance"
 	"github.com/hugokung/micro_gateway/pkg/response"
 	"github.com/pkg/errors"
 )
@@ -17,7 +18,9 @@ func HTTPReverseProxyMiddleware() gin.HandlerFunc {
 			return
 		}
 		serviceDetail := serviceInterface.(*dao.ServiceDetail)
-		lb, err := dao.LoadBalancerHandler.GetLoadBalancer(serviceDetail)
+		var lb load_balance.LoadBalance
+		var err error
+		lb, err = dao.LoadBalancerHandler.GetLoadBalancer(serviceDetail)
 		if err != nil {
 			response.ResponseError(ctx, 2002, err)
 			ctx.Abort()
