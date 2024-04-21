@@ -161,7 +161,7 @@ CREATE TABLE `gateway_service_http_rule` (
   `need_websocket` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否支持websocket 1=支持',
   `url_rewrite` varchar(5000) NOT NULL DEFAULT '' COMMENT 'url重写功能 格式：^/gatekeeper/test_service(.*) $1 多个逗号间隔',
   `header_transfor` varchar(5000) NOT NULL DEFAULT '' COMMENT 'header转换支持增加(add)、删除(del)、修改(edit) 格式: add headname headvalue 多个逗号间隔',
-  `retries` tinyint(4) NOT NULL DEFAULT '0' COMMIT '重试次数'  
+  `retries` tinyint(4) NOT NULL DEFAULT '0' COMMENT '重试次数'  
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='网关路由匹配表';
 
 --
