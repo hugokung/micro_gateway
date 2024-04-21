@@ -144,6 +144,14 @@ func GetLoadBalancerConf(service *ServiceDetail) (load_balance.LoadBalanceConf, 
 			return nil, err
 		}
 		return mConf, nil
+	case public.EtcdConfig:
+		ipConf := map[string]string{}
+		mConf, err := load_balance.NewLoadBalanceEtcdConf(fmt.Sprintf("%s%s", schema, "%s"), service.Info.ServiceName,
+			service.Environment.GetIPListByModel(), ipConf)
+		if err != nil {
+			return nil, err
+		}
+		return mConf, nil
 	}
 	return nil, errors.New("Discovery type not exist")
 }
