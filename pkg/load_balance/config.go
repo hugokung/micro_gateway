@@ -167,8 +167,8 @@ func (s *LoadBalanceEtcdConf) UpdateConf(conf []string) {
 func NewLoadBalanceZkConf(format, path string, zkHosts []string, conf map[string]string) (*LoadBalanceZkConf, error) {
 	zkManager := zookeeper.NewZkManager(zkHosts)
 	zkManager.GetConnect()
-	defer zkManager.Close()
 	zlist, err := zkManager.GetServerListByPath(path)
+	log.Printf("path: %v, zlist: %v\n", path, zlist)
 	if err != nil {
 		return nil, err
 	}

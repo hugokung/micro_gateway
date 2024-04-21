@@ -28,7 +28,7 @@ SET time_zone = "+00:00";
 --
 -- 表的结构 `gateway_admin`
 --
-
+DROP TABLE IF EXISTS `gateway_admin`;
 CREATE TABLE `gateway_admin` (
   `id` bigint(20) NOT NULL COMMENT '自增id',
   `user_name` varchar(255) NOT NULL DEFAULT '' COMMENT '用户名',
@@ -51,7 +51,7 @@ INSERT INTO `gateway_admin` (`id`, `user_name`, `salt`, `password`, `create_at`,
 --
 -- 表的结构 `gateway_app`
 --
-
+DROP TABLE IF EXISTS `gateway_app`;
 CREATE TABLE `gateway_app` (
   `id` bigint(20) UNSIGNED NOT NULL COMMENT '自增id',
   `app_id` varchar(255) NOT NULL DEFAULT '' COMMENT '租户id',
@@ -80,7 +80,7 @@ INSERT INTO `gateway_app` (`id`, `app_id`, `name`, `secret`, `white_ips`, `qpd`,
 --
 -- 表的结构 `gateway_service_access_control`
 --
-
+DROP TABLE IF EXISTS `gateway_service_access_control`;
 CREATE TABLE `gateway_service_access_control` (
   `id` bigint(20) NOT NULL COMMENT '自增主键',
   `service_id` bigint(20) NOT NULL DEFAULT '0' COMMENT '服务id',
@@ -128,7 +128,7 @@ INSERT INTO `gateway_service_access_control` (`id`, `service_id`, `open_auth`, `
 --
 -- 表的结构 `gateway_service_grpc_rule`
 --
-
+DROP TABLE IF EXISTS `gateway_service_grpc_rule`;
 CREATE TABLE `gateway_service_grpc_rule` (
   `id` bigint(20) NOT NULL COMMENT '自增主键',
   `service_id` bigint(20) NOT NULL DEFAULT '0' COMMENT '服务id',
@@ -150,7 +150,7 @@ INSERT INTO `gateway_service_grpc_rule` (`id`, `service_id`, `port`, `header_tra
 --
 -- 表的结构 `gateway_service_http_rule`
 --
-
+DROP TABLE IF EXISTS `gateway_service_http_rule`; 
 CREATE TABLE `gateway_service_http_rule` (
   `id` bigint(20) NOT NULL COMMENT '自增主键',
   `service_id` bigint(20) NOT NULL COMMENT '服务id',
@@ -177,7 +177,7 @@ INSERT INTO `gateway_service_http_rule` (`id`, `service_id`, `rule_type`, `rule`
 (174, 47, 1, 'www.test.com', 1, 1, 1, '', ''),
 (175, 48, 1, 'www.test.com', 1, 1, 1, '', ''),
 (176, 49, 1, 'www.test.com', 1, 1, 1, '', ''),
-(177, 56, 0, '/test_http_service', 1, 1, 1, '^/test_http_service/abb/(.*) /test_http_service/bba/$1', 'add header_name header_value'),
+(177, 56, 0, '/test_http_service', 0, 1, 1, '^/test_http_service/abb/(.*) /test_http_service/bba/$1', 'add header_name header_value'),
 (178, 59, 1, 'test.com', 0, 1, 1, '', 'add headername headervalue'),
 (179, 60, 0, '/test_strip_uri', 0, 1, 0, '^/aaa/(.*) /bbb/$1', ''),
 (180, 61, 0, '/test_https_server', 1, 1, 0, '', '');
@@ -187,12 +187,13 @@ INSERT INTO `gateway_service_http_rule` (`id`, `service_id`, `rule_type`, `rule`
 --
 -- 表的结构 `gateway_service_info`
 --
-
+DROP TABLE IF EXISTS `gateway_service_info`;
 CREATE TABLE `gateway_service_info` (
   `id` bigint(20) UNSIGNED NOT NULL COMMENT '自增主键',
   `load_type` tinyint(4) NOT NULL DEFAULT '0' COMMENT '负载类型 0=http 1=tcp 2=grpc',
   `service_name` varchar(255) NOT NULL DEFAULT '' COMMENT '服务名称 6-128 数字字母下划线',
   `service_desc` varchar(255) NOT NULL DEFAULT '' COMMENT '服务描述',
+  `service_discovery` tinyint(4) NOT NULL DEFAULT '0' COMMENT '服务发现类型', 
   `create_at` datetime NOT NULL DEFAULT '1971-01-01 00:00:00' COMMENT '添加时间',
   `update_at` datetime NOT NULL DEFAULT '1971-01-01 00:00:00' COMMENT '更新时间',
   `is_delete` tinyint(4) DEFAULT '0' COMMENT '是否删除 1=删除'
@@ -202,39 +203,39 @@ CREATE TABLE `gateway_service_info` (
 -- 转存表中的数据 `gateway_service_info`
 --
 
-INSERT INTO `gateway_service_info` (`id`, `load_type`, `service_name`, `service_desc`, `create_at`, `update_at`, `is_delete`) VALUES
-(34, 0, 'websocket_test', 'websocket_test', '2020-04-13 01:31:47', '1971-01-01 00:00:00', 1),
-(35, 1, 'test_grpc', 'test_grpc', '2020-04-13 01:34:32', '1971-01-01 00:00:00', 1),
-(36, 2, 'test_httpe', 'test_httpe', '2020-04-11 21:12:48', '1971-01-01 00:00:00', 1),
-(38, 0, 'service_name', '11111', '2020-04-15 07:49:45', '2020-04-11 23:59:39', 1),
-(41, 0, 'service_name_tcp', '11111', '2020-04-13 01:38:01', '2020-04-12 01:06:09', 1),
-(42, 0, 'service_name_tcp2', '11111', '2020-04-13 01:38:06', '2020-04-12 01:13:24', 1),
-(43, 1, 'service_name_tcp4', 'service_name_tcp4', '2020-04-15 07:49:44', '2020-04-12 01:13:50', 1),
-(44, 0, 'websocket_service', 'websocket_service', '2020-04-15 07:49:43', '2020-04-13 01:20:08', 1),
-(45, 1, 'tcp_service', 'tcp_desc', '2020-04-15 07:49:41', '2020-04-13 01:46:27', 1),
-(46, 1, 'grpc_service', 'grpc_desc', '2020-04-13 01:54:12', '2020-04-13 01:53:14', 1),
-(47, 0, 'testsefsafs', 'werrqrr', '2020-04-13 01:59:14', '2020-04-13 01:57:49', 1),
-(48, 0, 'testsefsafs1', 'werrqrr', '2020-04-13 01:59:11', '2020-04-13 01:58:14', 1),
-(49, 0, 'testsefsafs1222', 'werrqrr', '2020-04-13 01:59:08', '2020-04-13 01:58:23', 1),
-(50, 2, 'grpc_service_name', 'grpc_service_desc', '2020-04-15 07:49:40', '2020-04-13 02:01:00', 1),
-(51, 2, 'gresafsf', 'wesfsf', '2020-04-15 07:49:39', '2020-04-13 02:01:57', 1),
-(52, 2, 'gresafsf11', 'wesfsf', '2020-04-13 02:03:41', '2020-04-13 02:02:55', 1),
-(53, 2, 'tewrqrw111', '123313', '2020-04-13 02:03:38', '2020-04-13 02:03:20', 1),
-(54, 2, 'test_grpc_service1', 'test_grpc_service1', '2020-04-15 07:49:37', '2020-04-15 07:38:43', 1),
-(55, 1, 'test_tcp_service1', 'redis服务代理', '2020-04-15 07:49:35', '2020-04-15 07:46:35', 1),
-(56, 0, 'test_http_service', '测试HTTP代理', '2020-04-16 00:54:45', '2020-04-15 07:55:07', 0),
-(57, 1, 'test_tcp_service', '测试TCP代理', '2020-04-19 14:03:09', '2020-04-15 07:58:39', 0),
-(58, 2, 'test_grpc_service', '测试GRPC服务', '2020-04-21 07:20:16', '2020-04-15 07:59:46', 0),
-(59, 0, 'test.com:8080', '测试域名接入', '2020-04-18 22:54:14', '2020-04-18 20:29:13', 0),
-(60, 0, 'test_strip_uri', '测试路径接入', '2020-04-21 06:55:26', '2020-04-18 22:56:37', 0),
-(61, 0, 'test_https_server', '测试https服务', '2020-04-19 12:22:33', '2020-04-19 12:17:04', 0);
+INSERT INTO `gateway_service_info` (`id`, `load_type`, `service_name`, `service_desc`, `service_discovery`, `create_at`, `update_at`, `is_delete`) VALUES
+(34, 0, 'websocket_test', 'websocket_test', 0, '2020-04-13 01:31:47', '1971-01-01 00:00:00', 1),
+(35, 1, 'test_grpc', 'test_grpc', 0, '2020-04-13 01:34:32', '1971-01-01 00:00:00', 1),
+(36, 2, 'test_httpe', 'test_httpe', 0, '2020-04-11 21:12:48', '1971-01-01 00:00:00', 1),
+(38, 0, 'service_name', '11111', 0, '2020-04-15 07:49:45', '2020-04-11 23:59:39', 1),
+(41, 0, 'service_name_tcp', '11111', 0, '2020-04-13 01:38:01', '2020-04-12 01:06:09', 1),
+(42, 0, 'service_name_tcp2', '11111', 0, '2020-04-13 01:38:06', '2020-04-12 01:13:24', 1),
+(43, 1, 'service_name_tcp4', 'service_name_tcp4', 0, '2020-04-15 07:49:44', '2020-04-12 01:13:50', 1),
+(44, 0, 'websocket_service', 'websocket_service', 0, '2020-04-15 07:49:43', '2020-04-13 01:20:08', 1),
+(45, 1, 'tcp_service', 'tcp_desc', 0, '2020-04-15 07:49:41', '2020-04-13 01:46:27', 1),
+(46, 1, 'grpc_service', 'grpc_desc', 0, '2020-04-13 01:54:12', '2020-04-13 01:53:14', 1),
+(47, 0, 'testsefsafs', 'werrqrr', 0, '2020-04-13 01:59:14', '2020-04-13 01:57:49', 1),
+(48, 0, 'testsefsafs1', 'werrqrr', 0, '2020-04-13 01:59:11', '2020-04-13 01:58:14', 1),
+(49, 0, 'testsefsafs1222', 'werrqrr', 0, '2020-04-13 01:59:08', '2020-04-13 01:58:23', 1),
+(50, 2, 'grpc_service_name', 'grpc_service_desc', 0, '2020-04-15 07:49:40', '2020-04-13 02:01:00', 1),
+(51, 2, 'gresafsf', 'wesfsf', 0, '2020-04-15 07:49:39', '2020-04-13 02:01:57', 1),
+(52, 2, 'gresafsf11', 'wesfsf', 0, '2020-04-13 02:03:41', '2020-04-13 02:02:55', 1),
+(53, 2, 'tewrqrw111', '123313', 0, '2020-04-13 02:03:38', '2020-04-13 02:03:20', 1),
+(54, 2, 'test_grpc_service1', 'test_grpc_service1', 0, '2020-04-15 07:49:37', '2020-04-15 07:38:43', 1),
+(55, 1, 'test_tcp_service1', 'redis服务代理', 0, '2020-04-15 07:49:35', '2020-04-15 07:46:35', 1),
+(56, 0, 'test_http_service', '测试HTTP代理', 1, '2020-04-16 00:54:45', '2020-04-15 07:55:07', 0),
+(57, 1, 'test_tcp_service', '测试TCP代理', 0, '2020-04-19 14:03:09', '2020-04-15 07:58:39', 0),
+(58, 2, 'test_grpc_service', '测试GRPC服务', 0, '2020-04-21 07:20:16', '2020-04-15 07:59:46', 0),
+(59, 0, 'test.com:8080', '测试域名接入', 0, '2020-04-18 22:54:14', '2020-04-18 20:29:13', 0),
+(60, 0, 'test_strip_uri', '测试路径接入', 0, '2020-04-21 06:55:26', '2020-04-18 22:56:37', 0),
+(61, 0, 'test_https_server', '测试https服务', 0, '2020-04-19 12:22:33', '2020-04-19 12:17:04', 0);
 
 -- --------------------------------------------------------
 
 --
 -- 表的结构 `gateway_service_load_balance`
 --
-
+DROP TABLE IF EXISTS `gateway_service_load_balance`;
 CREATE TABLE `gateway_service_load_balance` (
   `id` bigint(20) NOT NULL COMMENT '自增主键',
   `service_id` bigint(20) NOT NULL DEFAULT '0' COMMENT '服务id',
@@ -287,7 +288,7 @@ INSERT INTO `gateway_service_load_balance` (`id`, `service_id`, `check_method`, 
 --
 -- 表的结构 `gateway_service_tcp_rule`
 --
-
+DROP TABLE IF EXISTS `gateway_service_tcp_rule`;
 CREATE TABLE `gateway_service_tcp_rule` (
   `id` bigint(20) NOT NULL COMMENT '自增主键',
   `service_id` bigint(20) NOT NULL COMMENT '服务id',
@@ -310,6 +311,34 @@ INSERT INTO `gateway_service_tcp_rule` (`id`, `service_id`, `port`) VALUES
 (179, 52, 8008),
 (180, 55, 8010),
 (181, 57, 8011);
+
+DROP TABLE IF EXISTS `gateway_environment`;
+CREATE TABLE `gateway_environment` (
+  `id` bigint(20) NOT NULL COMMENT '自增主键',
+  `service_id` bigint(20) NOT NULL COMMENT '服务id',
+  `env_name` varchar(2000) NOT NULL COMMENT '环境名称',
+  `ip_list` varchar(2000) NOT NULL COMMENT 'ip列表',
+  `is_delete` tinyint(4) NOT NULL DEFAULT 0 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='服务发现环境信息表';
+
+INSERT INTO `gateway_environment` (`id`, `service_id`, `env_name`, `ip_list`, `is_delete`) VALUES
+(1, 56, "ZK", "127.0.0.1:2181", 0);
+
+DROP TABLE IF EXISTS `gateway_circuit_config`;
+CREATE TABLE `gateway_circuit_config` (
+  `id` bigint(20) NOT NULL COMMENT '自增主键',
+  `service_id` bigint(20) NOT NULL COMMENT '服务id',
+  `service_name` varchar(2000) NOT NULL COMMENT '服务名称',
+  `timeout` tinyint(4) NOT NULL DEFAULT 0 COMMENT '超时时长',
+  `max_concurrent_requests` tinyint(4) NOT NULL DEFAULT 0,
+  `request_volume_threshold` tinyint(4) NOT NULL DEFAULT 0,
+  `sleep_window` tinyint(4) NOT NULL DEFAULT 0,
+  `error_percent_threshold` tinyint(4) NOT NULL DEFAULT 0,
+  `fall_back_msg` varchar(2000) NOT NULL,
+  `need_circuit` tinyint(4) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='熔断限流配置表';
+
+
 
 --
 -- Indexes for dumped tables
@@ -363,6 +392,11 @@ ALTER TABLE `gateway_service_load_balance`
 ALTER TABLE `gateway_service_tcp_rule`
   ADD PRIMARY KEY (`id`);
 
+ALTER TABLE `gateway_circuit_config`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `gateway_environment`
+  ADD PRIMARY KEY (`id`);
 --
 -- 在导出的表使用AUTO_INCREMENT
 --
@@ -406,8 +440,13 @@ ALTER TABLE `gateway_service_load_balance`
 -- 使用表AUTO_INCREMENT `gateway_service_tcp_rule`
 --
 ALTER TABLE `gateway_service_tcp_rule`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增主键', AUTO_INCREMENT=182;COMMIT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增主键', AUTO_INCREMENT=182;
 
+ALTER TABLE `gateway_circuit_config`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增主键', AUTO_INCREMENT=1;
+
+ALTER TABLE `gateway_environment` 
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增主键', AUTO_INCREMENT=1;COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
