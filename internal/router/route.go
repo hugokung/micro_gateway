@@ -2,7 +2,6 @@ package router
 
 import (
 	"log"
-	"math/rand"
 
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
