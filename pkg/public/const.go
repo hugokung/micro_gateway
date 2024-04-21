@@ -26,6 +26,7 @@ const (
 
 	StaticConfig    = 0
 	ZookeeperConfig = 1
+	EtcdConfig      = 2
 )
 
 var (
@@ -35,4 +36,3 @@ var (
 		LoadTypeGRPC: "GRPC",
 	}
 )
-

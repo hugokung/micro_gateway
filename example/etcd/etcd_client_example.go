@@ -69,7 +69,7 @@ func reportIPToEtcd() {
 	}
 
 	// 注册服务到 etcd
-	key := "/test_http_service"
+	key := "test_http_service"
 	value := ipAddr + ":8771"
 	ctx := context.Background()
 	//leaseResp, err := cli.Grant(ctx, 10) // 设置 TTL 为 10 秒
